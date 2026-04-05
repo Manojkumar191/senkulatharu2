@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8b34a"/>
+      <stop offset="100%" stop-color="#d8be8a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#bg)"/>
+  <rect x="140" y="110" width="920" height="480" rx="34" fill="#ffffff" fill-opacity="0.82"/>
+  <text x="200" y="250" font-size="58" font-family="Georgia, serif" fill="#1f4f35">Community Collective</text>
+  <text x="200" y="320" font-size="32" font-family="sans-serif" fill="#5f3b24">Supporting dryland families in Kadavur</text>
+  <text x="200" y="370" font-size="32" font-family="sans-serif" fill="#5f3b24">with transparent produce catalogs</text>
+</svg>
