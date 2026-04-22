@@ -30,3 +30,14 @@ export interface Feedback {
   created_at?: string;
   updated_at?: string;
 }
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  body: string;
+  author: string;
+  is_published: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

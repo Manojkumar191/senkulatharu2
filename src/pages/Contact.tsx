@@ -11,7 +11,7 @@ const MAP_OPEN_URL = `https://www.google.com/maps/search/?api=1&query=${MAP_LAT}
 const CONTACT_POINTS = [
   {
     title: 'Address',
-    value: FULL_ADDRESS,
+    value: 'No.5/223, Kurumbapatti, Tharagampatti (S.O), Kadavur, Karur, Tamil Nadu - 621311',
     icon: FiMapPin,
     iconBg: '#dff4e8',
     iconColor: '#1f7a4f',
