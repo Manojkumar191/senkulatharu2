@@ -19,3 +19,14 @@ export interface CarouselImage {
   sort_order: number;
   created_at?: string;
 }
+
+export interface Feedback {
+  id: string;
+  customer_name: string;
+  city_state: string;
+  review_text: string;
+  rating: number;
+  is_approved: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

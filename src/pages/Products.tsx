@@ -107,8 +107,8 @@ export function Products({ prefillSearch }: ProductsProps) {
       )}
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {filtered.map((product) => (
-          <ProductCard key={product.id} product={product} />
+        {filtered.map((product, index) => (
+          <ProductCard key={product.id} product={product} index={index} />
         ))}
       </div>
     </div>

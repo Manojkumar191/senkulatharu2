@@ -1,66 +1,71 @@
-const POSTS = [
+const STORY_STREAMS = [
   {
-    title: 'How Millets Returned to Kadavur Kitchens',
-    date: 'Jan 14, 2026',
-    excerpt: 'A community-led revival of traditional grains and recipes.',
-    content: 'Farmers collaborated with local women groups to reintroduce native millet dishes and direct weekly produce packs.',
+    title: 'Farming shaped by drought and rain',
+    summary:
+      'How crop choices, sowing windows, and field practices are designed around uncertain rain patterns in Kadavur.',
   },
   {
-    title: 'Dryland Soil Recovery in 12 Months',
-    date: 'Feb 03, 2026',
-    excerpt: 'Cover crops and organic matter helped improve moisture retention.',
-    content: 'Plots using mixed legume cover showed better resilience and yield stability than monocrop fields.',
+    title: 'Seasonal wild foods and foraging',
+    summary:
+      'Stories of avaram poo, sundakai, and other wild foods that appear only in certain seasons and remain part of local diets.',
   },
   {
-    title: 'Seed Saving as a Village Practice',
-    date: 'Feb 22, 2026',
-    excerpt: 'Intergenerational seed networks are reducing input costs.',
-    content: 'Families documented local seed lines and exchanged through farmer gatherings before each season.',
+    title: 'Food traditions kept by families',
+    summary:
+      'Recipes, household methods, and everyday practices that carry forward nutrition, taste, and cultural memory.',
   },
   {
-    title: 'Why Direct WhatsApp Ordering Works',
-    date: 'Mar 11, 2026',
-    excerpt: 'Simple ordering reduced friction for both farmers and customers.',
-    content: 'Transparent pricing and direct chat enabled faster feedback and reliable repeat buyers.',
+    title: 'Native seed searches and revival',
+    summary:
+      'Documentation of traditional crop varieties, farmer seed networks, and how local biodiversity is conserved through practice.',
   },
+];
+
+const DOCUMENTS = [
+  'The history of crops from the Kadavur drylands and their place in local food systems.',
+  'Forgotten food practices and processing methods that improve digestibility, taste, and shelf life.',
+  'Everyday wisdom from farmers and women collectives who continue to guide seasonal farming choices.',
+  'Living links between land, food, memory, and community in rain-dependent agriculture.',
 ];
 
 export function Blog() {
   return (
     <div className="space-y-8">
-      <section className="rounded-3xl bg-gradient-to-br from-moss to-forest p-8 text-cream shadow-glass">
-        <h1 className="font-headline text-4xl">Blog & Stories</h1>
-        <p className="mt-2 text-cream/90">Field stories, farmer insights, and practical dryland knowledge.</p>
+      <section className="rounded-3xl bg-gradient-to-br from-moss to-forest p-8 text-cream shadow-glass md:p-10">
+        <h1 className="font-headline text-4xl md:text-5xl">Stories from Kadavur</h1>
+        <div className="mt-4 max-w-5xl space-y-3 text-base leading-8 text-cream/95">
+          <p>
+            Every food carries a story. Some come from farming practices shaped by drought and rain. Others come from wild plants that appear only in certain seasons. Some are recipes and food traditions that have been quietly preserved within families.
+          </p>
+          <p>
+            Senkulatharu also documents and shares these stories, the history of crops, forgotten food practices, the search for traditional varieties, and the everyday wisdom that continues to guide farming in Kadavur block.
+          </p>
+          <p>Because understanding food also means understanding the land and the people who care for it.</p>
+        </div>
       </section>
 
       <section className="grid gap-5 md:grid-cols-2">
-        {POSTS.map((post, index) => (
+        {STORY_STREAMS.map((item, index) => (
           <article
-            key={post.title}
-            className="rounded-3xl border border-white/50 bg-white/80 p-6 shadow-glass"
-            style={{ animationDelay: `${index * 90}ms` }}
+            key={item.title}
+            className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-glass"
+            style={{ animationDelay: `${index * 80}ms` }}
           >
-            <p className="text-xs font-bold uppercase tracking-wide text-clay">{post.date}</p>
-            <h2 className="mt-2 font-headline text-2xl text-forest">{post.title}</h2>
-            <p className="mt-3 text-sm font-semibold text-brown">{post.excerpt}</p>
-            <p className="mt-2 text-sm text-brown/85">{post.content}</p>
+            <h2 className="font-headline text-3xl text-[#1b3b2d] md:text-4xl">{item.title}</h2>
+            <p className="mt-3 text-lg leading-8 text-forest/85">{item.summary}</p>
           </article>
         ))}
       </section>
 
-      <section className="rounded-3xl border border-white/50 bg-white/80 p-6 shadow-glass">
-        <h3 className="font-headline text-2xl text-forest">Newsletter</h3>
-        <p className="mt-2 text-sm text-brown/85">Get monthly farmer updates and seasonal produce stories.</p>
-        <form
-          className="mt-4 flex flex-col gap-3 md:flex-row"
-          onSubmit={(event) => {
-            event.preventDefault();
-            alert('Thanks for subscribing. This demo stores no backend records.');
-          }}
-        >
-          <input type="email" required placeholder="Your email" className="flex-1 rounded-xl border border-sand px-4 py-3" />
-          <button className="rounded-xl bg-forest px-6 py-3 font-bold text-white">Subscribe</button>
-        </form>
+      <section className="rounded-3xl border border-white/60 bg-white/80 p-7 shadow-glass">
+        <h3 className="font-headline text-3xl text-[#1b3b2d] md:text-4xl">What We Document</h3>
+        <div className="mt-4 space-y-3">
+          {DOCUMENTS.map((line) => (
+            <p key={line} className="rounded-2xl bg-forest/5 px-4 py-3 text-lg leading-8 text-forest/85">
+              {line}
+            </p>
+          ))}
+        </div>
       </section>
     </div>
   );

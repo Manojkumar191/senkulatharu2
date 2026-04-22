@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { addCarouselImage, getCarouselImages, removeCarouselImage, resetCarouselImages } from '../api/carousel';
+import { deleteFeedback, getAllFeedback, setFeedbackApproved } from '../api/feedback';
 import { addProduct, deleteProduct, getProducts, updateProduct } from '../api/products';
 import { supabase } from '../lib/supabase';
-import type { CarouselSection, Product } from '../types';
+import type { CarouselSection, Feedback, Product } from '../types';
 import { buildDescriptionWithMeta, parseCategoryFromDescription, parseStockFromDescription, stripMetaTags } from '../utils/meta';
 import { buildStoragePath, compressImage } from '../utils/image';
 
 const ADMIN_PASSWORD = (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) ?? 'admin123';
 const CATEGORY_STORAGE_KEY = 'senkulatharu_custom_categories';
 
-type Section = 'add' | 'edit' | 'categories' | 'carousel';
+type Section = 'add' | 'edit' | 'categories' | 'carousel' | 'feedback';
 
 function getStoredCategories(): string[] {
   try {
@@ -37,6 +38,7 @@ export function Admin() {
 
   const [topImages, setTopImages] = useState<string[]>([]);
   const [marqueeImages, setMarqueeImages] = useState<string[]>([]);
+  const [feedbackItems, setFeedbackItems] = useState<Feedback[]>([]);
 
   const reload = async () => {
     const [productRows, top, marquee] = await Promise.all([
@@ -47,6 +49,13 @@ export function Admin() {
     setProducts(productRows);
     setTopImages(top);
     setMarqueeImages(marquee);
+
+    try {
+      const feedbackRows = await getAllFeedback();
+      setFeedbackItems(feedbackRows);
+    } catch {
+      setFeedbackItems([]);
+    }
   };
 
   useEffect(() => {
@@ -63,6 +72,10 @@ export function Admin() {
     products.forEach((product) => set.add(parseCategoryFromDescription(product.description || '')));
     return [...set].sort((a, b) => a.localeCompare(b));
   }, [categories, products]);
+
+  const pendingFeedback = useMemo(() => feedbackItems.filter((item) => !item.is_approved), [feedbackItems]);
+
+  const approvedFeedback = useMemo(() => feedbackItems.filter((item) => item.is_approved), [feedbackItems]);
 
   const onLogin = () => {
     if (password === ADMIN_PASSWORD) {
@@ -254,6 +267,49 @@ export function Admin() {
     }
   };
 
+  const handleApproveFeedback = async (item: Feedback) => {
+    setBusy(true);
+    setNotice('');
+    try {
+      await setFeedbackApproved(item.id, true);
+      setNotice('Feedback added to moving section.');
+      await reload();
+    } catch {
+      setNotice('Failed to approve feedback.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRemoveApprovedFeedback = async (item: Feedback) => {
+    setBusy(true);
+    setNotice('');
+    try {
+      await setFeedbackApproved(item.id, false);
+      setNotice('Feedback removed from moving section.');
+      await reload();
+    } catch {
+      setNotice('Failed to remove feedback from moving section.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDeleteFeedback = async (item: Feedback) => {
+    if (!window.confirm('Delete this feedback?')) return;
+    setBusy(true);
+    setNotice('');
+    try {
+      await deleteFeedback(item.id);
+      setNotice('Feedback deleted.');
+      await reload();
+    } catch {
+      setNotice('Failed to delete feedback.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (!authenticated) {
     return (
       <section className="mx-auto max-w-md rounded-3xl border border-white/50 bg-white/85 p-8 shadow-glass">
@@ -283,7 +339,7 @@ export function Admin() {
             Logout
           </button>
         </div>
-        <p className="mt-2 text-sm text-cream/90">Manage products, categories, and carousel images directly via Supabase.</p>
+        <p className="mt-2 text-sm text-cream/90">Manage products, categories, carousel images, and feedback approvals directly via Supabase.</p>
       </section>
 
       <section className="flex flex-wrap gap-2">
@@ -292,6 +348,7 @@ export function Admin() {
           ['edit', 'Edit Products'],
           ['categories', 'Product Categories'],
           ['carousel', 'Carousel Images'],
+          ['feedback', 'Feedback'],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -403,6 +460,85 @@ export function Admin() {
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {section === 'feedback' && (
+        <section className="space-y-5 rounded-3xl border border-white/50 bg-white/85 p-6 shadow-glass">
+          <div>
+            <h2 className="font-headline text-2xl text-forest">Pending Feedback</h2>
+            <p className="mt-1 text-sm text-brown/80">Approve feedback to show it in the moving customer review section on Home.</p>
+          </div>
+
+          {pendingFeedback.length === 0 ? (
+            <p className="rounded-2xl bg-forest/5 p-4 text-sm text-brown">No pending feedback right now.</p>
+          ) : (
+            <div className="space-y-3">
+              {pendingFeedback.map((item) => (
+                <article key={item.id} className="rounded-2xl border border-sand/50 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="font-headline text-xl text-forest">{item.customer_name}</h3>
+                    <p className="text-sm font-bold text-forest">{'★'.repeat(Math.max(1, Math.min(5, Math.round(item.rating))))}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-brown/80">{item.city_state}</p>
+                  <p className="mt-2 text-sm text-brown">{item.review_text}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      disabled={busy}
+                      onClick={() => handleApproveFeedback(item)}
+                      className="rounded-xl bg-forest px-4 py-2 text-sm font-bold text-white"
+                    >
+                      Add To Moving Feedback
+                    </button>
+                    <button
+                      disabled={busy}
+                      onClick={() => handleDeleteFeedback(item)}
+                      className="rounded-xl bg-clay px-4 py-2 text-sm font-bold text-white"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          <div>
+            <h2 className="font-headline text-2xl text-forest">Feedback In Moving Section</h2>
+          </div>
+
+          {approvedFeedback.length === 0 ? (
+            <p className="rounded-2xl bg-forest/5 p-4 text-sm text-brown">No approved feedback yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {approvedFeedback.map((item) => (
+                <article key={item.id} className="rounded-2xl border border-sand/50 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="font-headline text-xl text-forest">{item.customer_name}</h3>
+                    <p className="text-sm font-bold text-forest">{'★'.repeat(Math.max(1, Math.min(5, Math.round(item.rating))))}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-brown/80">{item.city_state}</p>
+                  <p className="mt-2 text-sm text-brown">{item.review_text}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      disabled={busy}
+                      onClick={() => handleRemoveApprovedFeedback(item)}
+                      className="rounded-xl bg-moss px-4 py-2 text-sm font-bold text-white"
+                    >
+                      Remove From Moving Feedback
+                    </button>
+                    <button
+                      disabled={busy}
+                      onClick={() => handleDeleteFeedback(item)}
+                      className="rounded-xl bg-clay px-4 py-2 text-sm font-bold text-white"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       )}
 

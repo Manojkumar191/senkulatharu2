@@ -39,7 +39,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-app font-body text-brown">
       <Header activePage={activePage} onNavigate={setActivePage} />
-      <main className="mx-auto max-w-7xl px-4 py-8">{renderPage(activePage, prefillSearch, setActivePage)}</main>
+      <main className={`mx-auto max-w-7xl px-4 ${activePage === 'home' ? 'pb-8 pt-0' : 'py-8'}`}>
+        {renderPage(activePage, prefillSearch, setActivePage)}
+      </main>
       <Footer onNavigate={setActivePage} />
     </div>
   );

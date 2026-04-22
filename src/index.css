@@ -5,25 +5,30 @@
 @tailwind utilities;
 
 :root {
-  color: #5f3b24;
-  background: #f6efde;
+  color: #163a29;
+  background: #cde7d8;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 20% 10%, rgba(232, 179, 74, 0.3), transparent 38%),
-    radial-gradient(circle at 90% 20%, rgba(31, 79, 53, 0.25), transparent 38%),
-    linear-gradient(135deg, #f6efde 0%, #e8dcc0 45%, #d8be8a 100%);
+  background: #cde7d8;
 }
 
 .bg-app {
   position: relative;
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, rgba(31, 79, 53, 0.12), transparent 42%),
+    linear-gradient(180deg, #d5ecd9 0%, #c3dfcf 100%);
 }
 
 .bg-app::before {
@@ -31,8 +36,8 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image: linear-gradient(transparent 97%, rgba(95, 59, 36, 0.04) 100%);
-  background-size: 100% 24px;
+  background-image: linear-gradient(transparent 96%, rgba(20, 58, 40, 0.05) 100%);
+  background-size: 100% 22px;
   z-index: -1;
 }
 
