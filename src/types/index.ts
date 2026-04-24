@@ -12,6 +12,17 @@ export interface Product {
   updated_at?: string;
 }
 
+export interface CartItem {
+  id: string;
+  productId: string;
+  productName: string;
+  variantLabel?: string;
+  unitPrice: number;
+  originalUnitPrice?: number;
+  discountPercent?: number;
+  quantity: number;
+}
+
 export interface CarouselImage {
   id: string;
   section: CarouselSection;

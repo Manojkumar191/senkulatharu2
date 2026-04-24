@@ -52,7 +52,7 @@ export function About() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_5%,rgba(255,255,255,0.9),transparent_46%),radial-gradient(circle_at_90%_96%,rgba(181,231,204,0.36),transparent_58%)]" />
         <div className="relative space-y-5 text-[#2b5540]">
           <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#4f8e6a]">Kadavur Dryland Food Story</p>
-          <h1 className="max-w-4xl font-headline text-4xl leading-tight text-[#1f4a36] md:text-6xl">About Senkulatharu</h1>
+          <h1 className="max-w-4xl font-headline text-3xl leading-tight text-[#1f4a36] md:text-5xl">About Senkulatharu</h1>
           <p className="max-w-3xl text-sm leading-7 text-[#2f5a45] md:text-base md:leading-8">
             Naturally grown. Carefully handled. Honestly explained. Senkulatharu connects dryland farming communities to homes that value food with origin, context, and integrity.
           </p>
@@ -84,7 +84,7 @@ export function About() {
         <div className="flex items-start gap-4">
           <p className="font-headline text-3xl leading-none text-[#53a276] md:text-5xl">01</p>
           <div className="space-y-4">
-            <h2 className="font-headline text-3xl leading-tight text-[#24523d] md:text-5xl">A Name Born from Rain and Red Soil</h2>
+            <h2 className="font-headline text-2xl leading-tight text-[#24523d] md:text-4xl">A Name Born from Rain and Red Soil</h2>
             <ul className="space-y-3 text-[15px] leading-7 text-[#2f5a45] md:text-base md:leading-8">
               {RIVER_STORY.map((paragraph, index) => (
                 <li

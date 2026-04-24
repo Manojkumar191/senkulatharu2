@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getProducts } from '../api/products';
 import { ProductCard } from '../components/ProductCard';
-import type { Product } from '../types';
+import type { CartItem, Product } from '../types';
 import { parseCategoryFromDescription, stripMetaTags } from '../utils/meta';
 
 interface ProductsProps {
   prefillSearch?: string;
+  onAddToCart: (item: Omit<CartItem, 'id'>) => void;
 }
 
-export function Products({ prefillSearch }: ProductsProps) {
+export function Products({ prefillSearch, onAddToCart }: ProductsProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -68,13 +69,8 @@ export function Products({ prefillSearch }: ProductsProps) {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-3xl bg-gradient-to-br from-forest to-moss p-8 text-white shadow-glass">
-        <h1 className="font-headline text-4xl">Products</h1>
-        <p className="mt-2 text-cream/90">Explore naturally grown produce from dryland farmers. Search, filter by category, and order directly on WhatsApp.</p>
-      </section>
-
-      <section className="rounded-3xl border border-white/50 bg-white/80 p-5 shadow-glass">
-        <label htmlFor="search" className="mb-2 block text-sm font-bold text-brown">
+      <section className="rounded-3xl border border-[#d3e9db] bg-gradient-to-br from-[#f8fdf9] to-[#edf8f1] p-5 shadow-[0_12px_28px_rgba(63,118,89,0.08)]">
+        <label htmlFor="search" className="mb-3 block text-sm font-bold text-brown">
           Search Products
         </label>
         <input
@@ -99,16 +95,16 @@ export function Products({ prefillSearch }: ProductsProps) {
         </div>
       </section>
 
-      {loading && <p className="rounded-2xl bg-white/70 p-6 text-center text-brown">Loading products...</p>}
+      {loading && <p className="rounded-2xl border border-[#d3e9db] bg-[#edf8f1] p-6 text-center text-[#2f5a45]">Loading products...</p>}
       {!loading && error && <p className="rounded-2xl bg-clay/10 p-6 text-center text-clay">{error}</p>}
-      {!loading && !error && products.length === 0 && <p className="rounded-2xl bg-white/70 p-6 text-center text-brown">No products available yet.</p>}
+      {!loading && !error && products.length === 0 && <p className="rounded-2xl border border-[#d3e9db] bg-[#edf8f1] p-6 text-center text-[#2f5a45]">No products available yet.</p>}
       {!loading && !error && products.length > 0 && filtered.length === 0 && (
-        <p className="rounded-2xl bg-white/70 p-6 text-center text-brown">No matching products found for your filters.</p>
+        <p className="rounded-2xl border border-[#d3e9db] bg-[#edf8f1] p-6 text-center text-[#2f5a45]">No matching products found for your filters.</p>
       )}
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((product, index) => (
-          <ProductCard key={product.id} product={product} index={index} />
+          <ProductCard key={product.id} product={product} index={index} onAddToCart={onAddToCart} />
         ))}
       </div>
     </div>

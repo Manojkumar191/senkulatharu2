@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FaWhatsapp } from 'react-icons/fa';
 import { getCarouselImages } from '../api/carousel';
 import { getApprovedFeedback, submitFeedback } from '../api/feedback';
 import { getProducts } from '../api/products';
 import type { PageName, Product } from '../types';
-import { openWhatsApp } from '../utils/whatsapp';
 
 interface HomeProps {
   onNavigate: (page: PageName) => void;
@@ -521,15 +519,6 @@ export function Home({ onNavigate }: HomeProps) {
           </div>
         )}
       </section>
-
-      <button
-        type="button"
-        aria-label="Chat on WhatsApp"
-        onClick={() => openWhatsApp('Hello, I want to know more about your farm produce.')}
-        className="fixed bottom-5 right-5 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#25d366] to-[#128c7e] text-white shadow-[0_18px_30px_-14px_rgba(7,94,84,0.9)] transition duration-300 hover:scale-110 hover:shadow-[0_24px_36px_-16px_rgba(7,94,84,0.95)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a7f3d0]"
-      >
-        <FaWhatsapp className="text-3xl" />
-      </button>
     </div>
   );
 }

@@ -5,7 +5,16 @@ import { deleteFeedback, getAllFeedback, setFeedbackApproved } from '../api/feed
 import { addProduct, deleteProduct, getProducts, updateProduct } from '../api/products';
 import { supabase } from '../lib/supabase';
 import type { BlogPost, CarouselSection, Feedback, Product } from '../types';
-import { buildDescriptionWithMeta, parseCategoryFromDescription, parseStockFromDescription, stripMetaTags } from '../utils/meta';
+import {
+  buildDescriptionWithMeta,
+  formatVariantsForEditor,
+  parseCategoryFromDescription,
+  parseDiscountFromDescription,
+  parseStockFromDescription,
+  parseVariantsEditorInput,
+  parseVariantsFromDescription,
+  stripMetaTags,
+} from '../utils/meta';
 import { buildStoragePath, compressImage } from '../utils/image';
 
 const ADMIN_PASSWORD = (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) ?? 'admin123';
@@ -42,7 +51,16 @@ export function Admin() {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const [form, setForm] = useState({ name: '', price: '', description: '', category: 'Uncategorized', stock: '0', file: null as File | null });
+  const [form, setForm] = useState({
+    name: '',
+    price: '',
+    description: '',
+    category: 'Uncategorized',
+    stock: '0',
+    discount: '0',
+    variants: '',
+    file: null as File | null,
+  });
   const [newCategory, setNewCategory] = useState('');
 
   const [topImages, setTopImages] = useState<string[]>([]);
@@ -129,9 +147,22 @@ export function Admin() {
     event.preventDefault();
     const price = Number(form.price);
     const stock = Number(form.stock);
+    const discount = Number(form.discount);
+    const variants = parseVariantsEditorInput(form.variants);
+    const basePrice = variants.length > 0 ? variants[0].price : price;
 
-    if (!form.name.trim() || !Number.isFinite(price) || !form.category || stock < 0 || !Number.isFinite(stock)) {
-      setNotice('Please provide valid product fields including non-negative stock.');
+    if (
+      !form.name.trim() ||
+      !Number.isFinite(basePrice) ||
+      basePrice < 0 ||
+      !form.category ||
+      stock < 0 ||
+      !Number.isFinite(stock) ||
+      !Number.isFinite(discount) ||
+      discount < 0 ||
+      discount > 100
+    ) {
+      setNotice('Please provide valid product fields, stock, and discount (0 to 100).');
       return;
     }
 
@@ -141,12 +172,27 @@ export function Admin() {
       const imageUrl = form.file ? await uploadProductImage(form.file) : null;
       await addProduct({
         name: form.name.trim(),
-        price,
-        description: buildDescriptionWithMeta({ description: form.description, category: form.category, stock }),
+        price: basePrice,
+        description: buildDescriptionWithMeta({
+          description: form.description,
+          category: form.category,
+          stock,
+          discount,
+          variants,
+        }),
         image_url: imageUrl,
       });
 
-      setForm({ name: '', price: '', description: '', category: 'Uncategorized', stock: '0', file: null });
+      setForm({
+        name: '',
+        price: '',
+        description: '',
+        category: 'Uncategorized',
+        stock: '0',
+        discount: '0',
+        variants: '',
+        file: null,
+      });
       setNotice('Product added successfully.');
       await reload();
     } catch {
@@ -218,6 +264,8 @@ export function Admin() {
               description: stripMetaTags(product.description || ''),
               category: 'Uncategorized',
               stock: parseStockFromDescription(product.description || ''),
+              discount: parseDiscountFromDescription(product.description || ''),
+              variants: parseVariantsFromDescription(product.description || ''),
             }),
           }),
         ),
@@ -464,13 +512,39 @@ export function Admin() {
       {section === 'add' && (
         <form onSubmit={handleAddProduct} className="grid gap-3 rounded-3xl border border-white/50 bg-white/85 p-6 shadow-glass md:grid-cols-2">
           <input placeholder="Product name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="rounded-xl border border-sand px-4 py-3" required />
-          <input placeholder="Price" type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))} className="rounded-xl border border-sand px-4 py-3" required />
+          <input
+            placeholder="Base Price (used when no weight options)"
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.price}
+            onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
+            className="rounded-xl border border-sand px-4 py-3"
+            required
+          />
           <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} className="rounded-xl border border-sand px-4 py-3">
             {allCategories.map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
           <input placeholder="Stock" type="number" min="0" value={form.stock} onChange={(e) => setForm((p) => ({ ...p, stock: e.target.value }))} className="rounded-xl border border-sand px-4 py-3" required />
+          <input
+            placeholder="Discount % (0 to 100)"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value={form.discount}
+            onChange={(e) => setForm((p) => ({ ...p, discount: e.target.value }))}
+            className="rounded-xl border border-sand px-4 py-3"
+          />
+          <textarea
+            placeholder={`Weight and price options (one per line)\n1 kg - 50\n2 kg - 100`}
+            value={form.variants}
+            onChange={(e) => setForm((p) => ({ ...p, variants: e.target.value }))}
+            rows={4}
+            className="rounded-xl border border-sand px-4 py-3 md:col-span-2"
+          />
           <textarea placeholder="Description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={4} className="rounded-xl border border-sand px-4 py-3 md:col-span-2" />
           <input type="file" accept="image/*" onChange={(e) => setForm((p) => ({ ...p, file: e.target.files?.[0] ?? null }))} className="md:col-span-2" />
           <button disabled={busy} className="rounded-xl bg-forest px-5 py-3 font-bold text-white md:col-span-2">{busy ? 'Saving...' : 'Add Product'}</button>
@@ -482,10 +556,13 @@ export function Admin() {
           {products.map((product) => {
             const category = parseCategoryFromDescription(product.description || '');
             const stock = parseStockFromDescription(product.description || '');
+            const discount = parseDiscountFromDescription(product.description || '');
+            const variants = parseVariantsFromDescription(product.description || '');
+            const variantsEditorValue = formatVariantsForEditor(variants);
             const clean = stripMetaTags(product.description || '');
             return (
-              <article key={product.id} className="grid gap-2 rounded-3xl border border-white/50 bg-white/85 p-4 shadow-glass md:grid-cols-6">
-                <input value={product.name} onChange={(e) => setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, name: e.target.value } : p)))} className="rounded-xl border border-sand px-3 py-2 md:col-span-2" />
+              <article key={product.id} className="grid gap-2 rounded-3xl border border-white/50 bg-white/85 p-4 shadow-glass md:grid-cols-2">
+                <input value={product.name} onChange={(e) => setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, name: e.target.value } : p)))} className="rounded-xl border border-sand px-3 py-2" />
                 <input type="number" value={product.price} onChange={(e) => setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, price: Number(e.target.value) } : p)))} className="rounded-xl border border-sand px-3 py-2" />
                 <select
                   value={category}
@@ -493,7 +570,16 @@ export function Admin() {
                     setProducts((prev) =>
                       prev.map((p) =>
                         p.id === product.id
-                          ? { ...p, description: buildDescriptionWithMeta({ description: clean, category: e.target.value, stock }) }
+                          ? {
+                              ...p,
+                              description: buildDescriptionWithMeta({
+                                description: clean,
+                                category: e.target.value,
+                                stock,
+                                discount,
+                                variants,
+                              }),
+                            }
                           : p,
                       ),
                     )
@@ -512,7 +598,42 @@ export function Admin() {
                     setProducts((prev) =>
                       prev.map((p) =>
                         p.id === product.id
-                          ? { ...p, description: buildDescriptionWithMeta({ description: clean, category, stock: Number(e.target.value) }) }
+                          ? {
+                              ...p,
+                              description: buildDescriptionWithMeta({
+                                description: clean,
+                                category,
+                                stock: Number(e.target.value),
+                                discount,
+                                variants,
+                              }),
+                            }
+                          : p,
+                      ),
+                    )
+                  }
+                  className="rounded-xl border border-sand px-3 py-2"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={discount}
+                  onChange={(e) =>
+                    setProducts((prev) =>
+                      prev.map((p) =>
+                        p.id === product.id
+                          ? {
+                              ...p,
+                              description: buildDescriptionWithMeta({
+                                description: clean,
+                                category,
+                                stock,
+                                discount: Number(e.target.value),
+                                variants,
+                              }),
+                            }
                           : p,
                       ),
                     )
@@ -520,17 +641,51 @@ export function Admin() {
                   className="rounded-xl border border-sand px-3 py-2"
                 />
                 <textarea
+                  value={variantsEditorValue}
+                  onChange={(e) =>
+                    setProducts((prev) =>
+                      prev.map((p) => {
+                        if (p.id !== product.id) return p;
+                        const nextVariants = parseVariantsEditorInput(e.target.value);
+                        return {
+                          ...p,
+                          price: nextVariants[0]?.price ?? p.price,
+                          description: buildDescriptionWithMeta({
+                            description: clean,
+                            category,
+                            stock,
+                            discount,
+                            variants: nextVariants,
+                          }),
+                        };
+                      }),
+                    )
+                  }
+                  className="rounded-xl border border-sand px-3 py-2 md:col-span-2"
+                  rows={3}
+                  placeholder={`Weight and price options\n1 kg - 50\n2 kg - 100`}
+                />
+                <textarea
                   value={clean}
                   onChange={(e) =>
                     setProducts((prev) =>
                       prev.map((p) =>
                         p.id === product.id
-                          ? { ...p, description: buildDescriptionWithMeta({ description: e.target.value, category, stock }) }
+                          ? {
+                              ...p,
+                              description: buildDescriptionWithMeta({
+                                description: e.target.value,
+                                category,
+                                stock,
+                                discount,
+                                variants,
+                              }),
+                            }
                           : p,
                       ),
                     )
                   }
-                  className="rounded-xl border border-sand px-3 py-2 md:col-span-4"
+                  className="rounded-xl border border-sand px-3 py-2 md:col-span-2"
                 />
                 <div className="flex items-center justify-end gap-2 md:col-span-2">
                   <button onClick={() => handleUpdate(product)} className="rounded-xl bg-forest px-4 py-2 text-sm font-bold text-white">Save</button>
