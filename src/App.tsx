@@ -34,7 +34,7 @@ function renderPage({ page, search, onNavigate, onAddToCart }: RenderPageOptions
     case 'contact':
       return <Contact />;
     case 'admin':
-      return <Admin />;
+      return <Admin onNavigate={onNavigate} />;
     default:
       return <Home onNavigate={onNavigate} />;
   }
@@ -92,19 +92,21 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-app font-body text-brown">
-      <Header
-        activePage={activePage}
-        onNavigate={setActivePage}
-        cartCount={cartCount}
-        onCartClick={() => {
-          setActivePage('products');
-        }}
-        cartItems={cartItems}
-        onUpdateCartItemQuantity={updateCartItemQuantity}
-        onRemoveCartItem={removeCartItem}
-        onClearCart={clearCart}
-      />
-      <main className={`mx-auto mt-[108px] max-w-7xl px-4 md:mt-[78px] ${activePage === 'home' ? 'pb-8 pt-0' : 'py-8'}`}>
+      {activePage !== 'admin' && (
+        <Header
+          activePage={activePage}
+          onNavigate={setActivePage}
+          cartCount={cartCount}
+          onCartClick={() => {
+            setActivePage('products');
+          }}
+          cartItems={cartItems}
+          onUpdateCartItemQuantity={updateCartItemQuantity}
+          onRemoveCartItem={removeCartItem}
+          onClearCart={clearCart}
+        />
+      )}
+      <main className={`mx-auto max-w-7xl px-4 pb-8 ${activePage === 'home' ? 'pt-0' : 'pt-3 md:pt-4'}`}>
         {renderPage({
           page: activePage,
           search: prefillSearch,
@@ -117,7 +119,7 @@ export default function App() {
           {cartNotice}
         </div>
       )}
-      <Footer onNavigate={setActivePage} />
+      {activePage !== 'admin' && <Footer onNavigate={setActivePage} />}
     </div>
   );
 }

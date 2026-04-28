@@ -488,14 +488,14 @@ export function Home({ onNavigate }: HomeProps) {
                 value={feedbackForm.customer_name}
                 onChange={(event) => setFeedbackForm((prev) => ({ ...prev, customer_name: event.target.value }))}
                 placeholder="Your Name"
-                className="rounded-xl border border-[#9fdab8]/30 bg-white/10 px-4 py-2.5 text-sm text-cream placeholder:text-cream/70"
+                className="rounded-xl border border-[#9fdab8]/30 bg-[#d7e5e0] px-4 py-2.5 text-sm text-[#163a2c] placeholder:text-[#163a2c]/70 font-bold caret-[#163a2c] focus:outline-none focus:ring-2 focus:ring-[#9fdab8]/40"
                 required
               />
               <input
                 value={feedbackForm.city_state}
                 onChange={(event) => setFeedbackForm((prev) => ({ ...prev, city_state: event.target.value }))}
                 placeholder="City, State"
-                className="rounded-xl border border-[#9fdab8]/30 bg-white/10 px-4 py-2.5 text-sm text-cream placeholder:text-cream/70"
+                className="rounded-xl border border-[#9fdab8]/30 bg-[#d7e5e0] px-4 py-2.5 text-sm text-[#163a2c] placeholder:text-[#163a2c]/70 font-bold caret-[#163a2c] focus:outline-none focus:ring-2 focus:ring-[#9fdab8]/40"
                 required
               />
               <textarea
@@ -503,7 +503,7 @@ export function Home({ onNavigate }: HomeProps) {
                 onChange={(event) => setFeedbackForm((prev) => ({ ...prev, review_text: event.target.value }))}
                 placeholder="Write your review"
                 rows={4}
-                className="rounded-xl border border-[#9fdab8]/30 bg-white/10 px-4 py-2.5 text-sm text-cream placeholder:text-cream/70 md:col-span-2"
+                className="rounded-xl border border-[#9fdab8]/30 bg-[#d7e5e0] px-4 py-2.5 text-sm text-[#163a2c] placeholder:text-[#163a2c]/70 md:col-span-2 font-bold caret-[#163a2c] focus:outline-none focus:ring-2 focus:ring-[#9fdab8]/40"
                 required
               />
               <button

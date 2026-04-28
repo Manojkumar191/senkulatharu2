@@ -45,8 +45,8 @@ export function Header({
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/60 bg-white/95 backdrop-blur-lg">
-      <div className="mx-auto flex w-full max-w-[92rem] items-center gap-2 px-3 py-2 sm:gap-2.5 sm:px-4 sm:py-2.5">
+    <header className="sticky inset-x-0 top-0 z-50 border-b border-white/60 bg-white/95 backdrop-blur-lg">
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 py-2 sm:gap-2.5 sm:py-2.5">
         <button className="min-w-0 flex-1 text-left" onClick={() => onNavigate('home')}>
           <p className="truncate font-headline text-lg font-extrabold leading-none tracking-[0.03em] text-forest sm:text-[1.65rem]">Senkulatharu</p>
           <p className="mt-0.5 truncate text-[11px] font-extrabold tracking-[0.03em] text-forest sm:text-[13px]">Rooted in Soil, Grown with Care</p>
@@ -188,7 +188,7 @@ export function Header({
         </div>
       </div>
 
-      <div className="scrollbar-none flex gap-2 overflow-x-auto px-3 pb-2 sm:px-4 md:hidden">
+      <div className="scrollbar-none flex gap-2 overflow-x-auto px-4 pb-2 md:hidden">
         {navItems.map((item) => (
           <button
             key={item.page}

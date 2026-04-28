@@ -8,6 +8,7 @@ export interface Product {
   price: number;
   description: string;
   image_url: string | null;
+  admin_user_id?: string;
   created_at?: string;
   updated_at?: string;
 }
