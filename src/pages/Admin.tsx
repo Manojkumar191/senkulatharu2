@@ -67,22 +67,19 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   const [newCategory, setNewCategory] = useState('');
 
   const [topImages, setTopImages] = useState<string[]>([]);
-  const [marqueeImages, setMarqueeImages] = useState<string[]>([]);
   const [feedbackItems, setFeedbackItems] = useState<Feedback[]>([]);
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [blogForm, setBlogForm] = useState(emptyBlogForm);
   const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
 
   const reload = async () => {
-    const [productRows, top, marquee, blogRows] = await Promise.all([
+    const [productRows, top, blogRows] = await Promise.all([
       getProducts(),
       getCarouselImages('top'),
-      getCarouselImages('marquee'),
       getAllBlogs(),
     ]);
     setProducts(productRows);
     setTopImages(top);
-    setMarqueeImages(marquee);
     setBlogs(blogRows);
 
     try {
@@ -318,7 +315,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   };
 
   const handleCarouselRemove = async (sectionName: CarouselSection, imageUrl: string) => {
-    const current = sectionName === 'top' ? topImages : marqueeImages;
+    const current = topImages;
     if (current.length <= 1) {
       setNotice('At least one image must remain in this section.');
       return;
@@ -858,14 +855,12 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
 
       {section === 'carousel' && (
         <section className="space-y-5 rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
-          {([
+          {[
             ['top', topImages],
-            ['marquee', marqueeImages],
-          ] as [CarouselSection, string[]][]).map(([sectionName, images]) => (
-            <div key={sectionName} className="space-y-3 rounded-lg border border-sand/30 bg-white/60 p-4">
+          ].map(([sectionName, images]) => (
+            <div key={String(sectionName)} className="space-y-3 rounded-lg border border-sand/30 bg-white/60 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-headline text-lg capitalize text-forest">{sectionName} Section</h3>
-                <button onClick={() => handleCarouselReset(sectionName)} className="rounded-lg bg-clay px-3 py-2 text-sm font-bold text-white hover:bg-clay/90 transition">Reset Defaults</button>
               </div>
               <input type="file" accept="image/*" onChange={(e) => handleCarouselUpload(sectionName, e.target.files?.[0] ?? null)} className="text-sm" />
               <div className="grid gap-3 md:grid-cols-3">
