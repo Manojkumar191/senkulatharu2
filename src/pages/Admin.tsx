@@ -538,44 +538,73 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
         )}
 
       {section === 'add' && (
-        <form onSubmit={handleAddProduct} className="grid gap-4 rounded-xl border border-sand/30 bg-white p-6 shadow-sm md:grid-cols-2">
-          <input placeholder="Product name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" required />
-          <input
-            placeholder="Base Price (used when no weight options)"
-            type="number"
-            min="0"
-            step="0.01"
-            value={form.price}
-            onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
-            className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
-            required
-          />
-          <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30">
-            {allCategories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-          <input placeholder="Stock" type="number" min="0" value={form.stock} onChange={(e) => setForm((p) => ({ ...p, stock: e.target.value }))} className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" required />
-          <input
-            placeholder="Discount % (0 to 100)"
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            value={form.discount}
-            onChange={(e) => setForm((p) => ({ ...p, discount: e.target.value }))}
-            className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
-          />
-          <textarea
-            placeholder={`Weight and price options (one per line)\n1 kg - 50\n2 kg - 100`}
-            value={form.variants}
-            onChange={(e) => setForm((p) => ({ ...p, variants: e.target.value }))}
-            rows={4}
-            className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 md:col-span-2"
-          />
-          <textarea placeholder="Description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={4} className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 md:col-span-2" />
-          <input type="file" accept="image/*" onChange={(e) => setForm((p) => ({ ...p, file: e.target.files?.[0] ?? null }))} className="md:col-span-2 text-sm" />
-          <button disabled={busy} className="rounded-lg bg-forest px-5 py-3 font-bold text-white hover:bg-forest/90 transition disabled:opacity-50 md:col-span-2">{busy ? 'Saving...' : 'Add Product'}</button>
+        <form onSubmit={handleAddProduct} className="rounded-lg border border-sand/30 bg-white p-6 shadow-sm space-y-3">
+          <h2 className="font-headline text-xl text-forest">Add New Product</h2>
+          <div>
+            <label className="text-sm font-bold text-slate-800">Product Name</label>
+            <input placeholder="Enter product name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="w-full rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" required />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="text-sm font-bold text-slate-800">Base Price</label>
+              <input
+                placeholder="0.00"
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.price}
+                onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
+                className="w-full rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
+                required
+              />
+            </div>
+            <div className="flex-1">
+              <label className="text-sm font-bold text-slate-800">Category</label>
+              <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} className="w-full rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30">
+                {allCategories.filter((cat) => cat !== 'Uncategorized').map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="text-sm font-bold text-slate-800">Stock</label>
+              <input placeholder="0" type="number" min="0" value={form.stock} onChange={(e) => setForm((p) => ({ ...p, stock: e.target.value }))} className="w-full rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" required />
+            </div>
+            <div className="flex-1">
+              <label className="text-sm font-bold text-slate-800">Discount %</label>
+              <input
+                placeholder="0"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={form.discount}
+                onChange={(e) => setForm((p) => ({ ...p, discount: e.target.value }))}
+                className="w-full rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-bold text-slate-800">Description</label>
+            <textarea placeholder="Describe the product..." value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={2} className="w-full rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
+          </div>
+          <div>
+            <label className="text-sm font-bold text-slate-800">Weight Options</label>
+            <textarea
+              placeholder={`1 kg - 50\n2 kg - 100`}
+              value={form.variants}
+              onChange={(e) => setForm((p) => ({ ...p, variants: e.target.value }))}
+              rows={2}
+              className="w-full rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-bold text-slate-800">Product Image</label>
+            <input type="file" accept="image/*" onChange={(e) => setForm((p) => ({ ...p, file: e.target.files?.[0] ?? null }))} className="w-full text-xs" />
+          </div>
+          <button disabled={busy} className="w-full rounded-lg bg-forest px-4 py-2 font-bold text-white hover:bg-forest/90 transition disabled:opacity-50">{busy ? 'Saving...' : 'Add Product'}</button>
         </form>
       )}
 
@@ -690,9 +719,9 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
                               <input type="number" value={String(editingProductForm.price)} onChange={(e) => setEditingProductForm((p) => ({ ...p, price: Number(e.target.value) }))} className="w-full rounded-lg border px-2 py-1 text-sm" />
                             </div>
                             <div className="flex-1">
-                              <label className="text-xs font-semibold text-slate-700">Category</label>
+                              <label className="text-sm font-bold text-slate-800">Category</label>
                               <select value={editingProductForm.category} onChange={(e) => setEditingProductForm((p) => ({ ...p, category: e.target.value }))} className="w-full rounded-lg border px-2 py-1 text-sm z-50">
-                                {allCategories.map((cat) => (
+                                {allCategories.filter((cat) => cat !== 'Uncategorized').map((cat) => (
                                   <option key={cat} value={cat}>{cat}</option>
                                 ))}
                               </select>
