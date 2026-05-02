@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { addBlog, deleteBlog, getAllBlogs, updateBlog } from '../api/blogs';
 import { addCarouselImage, getCarouselImages, removeCarouselImage, resetCarouselImages } from '../api/carousel';
 import { deleteFeedback, getAllFeedback, setFeedbackApproved } from '../api/feedback';
 import { addProduct, deleteProduct, getProducts, updateProduct } from '../api/products';
 import { supabase } from '../lib/supabase';
-import type { BlogPost, CarouselSection, Feedback, Product, PageName } from '../types';
+import type { BlogPost, CarouselSection, Feedback, Product } from '../types';
 import {
   buildDescriptionWithMeta,
   formatVariantsForEditor,
@@ -18,7 +18,6 @@ import {
 import { buildStoragePath, compressImage } from '../utils/image';
 
 const ADMIN_PASSWORD = (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) ?? 'admin123';
-const ADMIN_USER = (import.meta.env.VITE_ADMIN_USER as string | undefined) ?? 'admin';
 const CATEGORY_STORAGE_KEY = 'senkulatharu_custom_categories';
 
 type Section = 'add' | 'edit' | 'categories' | 'carousel' | 'feedback' | 'blog';
@@ -41,11 +40,9 @@ function getStoredCategories(): string[] {
   }
 }
 
-export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void }) {
+export function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [loginName, setLoginName] = useState('');
-  const [adminUser, setAdminUser] = useState('');
   const [authError, setAuthError] = useState('');
   const [section, setSection] = useState<Section>('add');
 
@@ -113,29 +110,13 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   const approvedFeedback = useMemo(() => feedbackItems.filter((item) => item.is_approved), [feedbackItems]);
 
   const onLogin = () => {
-    const name = loginName.trim();
-    if (!name) {
-      setAuthError('Admin login ID is required.');
-      return;
-    }
-    if (!password) {
-      setAuthError('Password is required.');
-      return;
-    }
-    if (name !== ADMIN_USER) {
-      setAuthError('Unknown admin login ID.');
-      return;
-    }
-    if (password !== ADMIN_PASSWORD) {
+    if (password === ADMIN_PASSWORD) {
+      setAuthenticated(true);
+      setAuthError('');
+      setPassword('');
+    } else {
       setAuthError('Incorrect password.');
-      return;
     }
-
-    setAuthenticated(true);
-    setAuthError('');
-    setPassword('');
-    setAdminUser(name);
-    setLoginName('');
   };
 
   const uploadProductImage = async (file: File) => {
@@ -199,8 +180,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
           discount,
           variants,
         }),
-          image_url: imageUrl,
-          admin_user_id: adminUser || 'admin',
+        image_url: imageUrl,
       });
 
       setForm({
@@ -436,6 +416,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   };
 
   const handleEditBlog = (post: BlogPost) => {
+    setSection('blog');
     setEditingBlogId(post.id);
     setBlogForm({
       title: post.title ?? '',
@@ -444,10 +425,6 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       author: post.author ?? '',
       is_published: post.is_published ?? true,
     });
-  };
-
-  const handleCancelBlogEdit = () => {
-    resetBlogForm();
   };
 
   const handleToggleBlogPublish = async (post: BlogPost) => {
@@ -481,100 +458,60 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
 
   if (!authenticated) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <section className="animate-floatIn mx-auto w-full max-w-md rounded-lg border border-sand/30 bg-white p-8 shadow-sm">
-          <h1 className="font-headline text-3xl text-forest">Admin Login</h1>
-          <label className="mt-4 block text-sm font-bold text-brown">Admin login ID</label>
-          <input
-            type="text"
-            value={loginName}
-            onChange={(event) => setLoginName(event.target.value)}
-            className="mt-2 w-full rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
-            placeholder="Enter admin login ID"
-          />
-          <label className="mt-4 block text-sm font-bold text-brown">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="mt-2 w-full rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
-            placeholder="Enter admin password"
-          />
-          {authError && <p className="mt-2 text-sm text-clay">{authError}</p>}
-          <button onClick={onLogin} className="mt-4 w-full rounded-lg bg-forest px-4 py-3 font-bold text-white hover:bg-forest/90 transition">
-            Login
-          </button>
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => onNavigate?.('home')}
-              className="text-sm text-forest/70 hover:text-forest"
-            >
-              Back to home
-            </button>
-          </div>
-        </section>
-      </div>
+      <section className="mx-auto max-w-md rounded-3xl border border-white/50 bg-white/85 p-8 shadow-glass">
+        <h1 className="font-headline text-3xl text-forest">Admin Login</h1>
+        <p className="mt-2 text-sm text-brown/80">Use your frontend password from VITE_ADMIN_PASSWORD.</p>
+        <input
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          className="mt-4 w-full rounded-xl border border-sand px-4 py-3"
+          placeholder="Enter admin password"
+        />
+        {authError && <p className="mt-2 text-sm text-clay">{authError}</p>}
+        <button onClick={onLogin} className="mt-4 w-full rounded-xl bg-forest px-4 py-3 font-bold text-white">
+          Login
+        </button>
+      </section>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Navigation Bar */}
-      <nav className="sticky top-0 z-50 bg-gradient-to-r from-forest to-moss text-white shadow-lg">
-        <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="font-headline text-2xl font-bold">Admin Panel</h1>
-            {adminUser && <p className="text-xs text-cream/80">Logged in as: {adminUser}</p>}
-          </div>
-          <button
-            onClick={() => setAuthenticated(false)}
-              className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-rose-500"
-          >
+    <div className="space-y-6">
+      <section className="rounded-3xl bg-gradient-to-br from-forest to-moss p-6 text-white shadow-glass">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="font-headline text-3xl">Admin Panel</h1>
+          <button onClick={() => setAuthenticated(false)} className="rounded-full border border-white/60 px-4 py-2 text-sm font-bold text-white">
             Logout
           </button>
         </div>
-      </nav>
+        <p className="mt-2 text-sm text-cream/90">Manage products, categories, carousel images, and feedback approvals directly via Supabase.</p>
+      </section>
 
-      {/* Tab Navigation */}
-      <div className="bg-white/50 border-b border-sand sticky top-[72px] z-40">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="flex gap-1 overflow-x-auto py-2">
-            {[
-              ['add', '➕ Add Product'],
-              ['edit', '✏️ Edit Products'],
-              ['categories', '🏷️ Categories'],
-              ['carousel', '🖼️ Carousel'],
-              ['feedback', '💬 Feedback'],
-              ['blog', '📝 Blog'],
-            ].map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setSection(key as Section)}
-                className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-bold transition ${
-                  section === key
-                    ? 'bg-forest text-white shadow-md'
-                    : 'bg-white/70 text-forest hover:bg-white'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <section className="flex flex-wrap gap-2">
+        {[
+          ['add', 'Add Product'],
+          ['edit', 'Edit Products'],
+          ['categories', 'Product Categories'],
+          ['carousel', 'Carousel Images'],
+          ['feedback', 'Feedback'],
+          ['blog', 'Blog Stories'],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setSection(key as Section)}
+            className={`rounded-full px-4 py-2 text-sm font-bold ${section === key ? 'bg-forest text-white' : 'bg-white/80 text-forest'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </section>
 
-      {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-6 pb-8">
-        {notice && (
-          <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-700 shadow-sm">
-            {notice}
-          </div>
-        )}
+      {notice && <p className="rounded-2xl bg-white/80 p-4 text-sm text-brown">{notice}</p>}
 
       {section === 'add' && (
-        <form onSubmit={handleAddProduct} className="grid gap-4 rounded-xl border border-sand/30 bg-white p-6 shadow-sm md:grid-cols-2">
-          <input placeholder="Product name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" required />
+        <form onSubmit={handleAddProduct} className="grid gap-3 rounded-3xl border border-white/50 bg-white/85 p-6 shadow-glass md:grid-cols-2">
+          <input placeholder="Product name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="rounded-xl border border-sand px-4 py-3" required />
           <input
             placeholder="Base Price (used when no weight options)"
             type="number"
@@ -582,15 +519,15 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
             step="0.01"
             value={form.price}
             onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
-            className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
+            className="rounded-xl border border-sand px-4 py-3"
             required
           />
-          <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30">
+          <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} className="rounded-xl border border-sand px-4 py-3">
             {allCategories.map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
-          <input placeholder="Stock" type="number" min="0" value={form.stock} onChange={(e) => setForm((p) => ({ ...p, stock: e.target.value }))} className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" required />
+          <input placeholder="Stock" type="number" min="0" value={form.stock} onChange={(e) => setForm((p) => ({ ...p, stock: e.target.value }))} className="rounded-xl border border-sand px-4 py-3" required />
           <input
             placeholder="Discount % (0 to 100)"
             type="number"
@@ -599,23 +536,23 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
             step="0.01"
             value={form.discount}
             onChange={(e) => setForm((p) => ({ ...p, discount: e.target.value }))}
-            className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
+            className="rounded-xl border border-sand px-4 py-3"
           />
           <textarea
             placeholder={`Weight and price options (one per line)\n1 kg - 50\n2 kg - 100`}
             value={form.variants}
             onChange={(e) => setForm((p) => ({ ...p, variants: e.target.value }))}
             rows={4}
-            className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 md:col-span-2"
+            className="rounded-xl border border-sand px-4 py-3 md:col-span-2"
           />
-          <textarea placeholder="Description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={4} className="rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 md:col-span-2" />
-          <input type="file" accept="image/*" onChange={(e) => setForm((p) => ({ ...p, file: e.target.files?.[0] ?? null }))} className="md:col-span-2 text-sm" />
-          <button disabled={busy} className="rounded-lg bg-forest px-5 py-3 font-bold text-white hover:bg-forest/90 transition disabled:opacity-50 md:col-span-2">{busy ? 'Saving...' : 'Add Product'}</button>
+          <textarea placeholder="Description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={4} className="rounded-xl border border-sand px-4 py-3 md:col-span-2" />
+          <input type="file" accept="image/*" onChange={(e) => setForm((p) => ({ ...p, file: e.target.files?.[0] ?? null }))} className="md:col-span-2" />
+          <button disabled={busy} className="rounded-xl bg-forest px-5 py-3 font-bold text-white md:col-span-2">{busy ? 'Saving...' : 'Add Product'}</button>
         </form>
       )}
 
       {section === 'edit' && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {products.map((product) => {
             const category = parseCategoryFromDescription(product.description || '');
             const stock = parseStockFromDescription(product.description || '');
@@ -624,9 +561,9 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
             const variantsEditorValue = formatVariantsForEditor(variants);
             const clean = stripMetaTags(product.description || '');
             return (
-              <article key={product.id} className="grid gap-2 rounded-lg border border-sand/30 bg-white p-4 shadow-sm md:grid-cols-2">
-                <input value={product.name} onChange={(e) => setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, name: e.target.value } : p)))} className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
-                <input type="number" value={product.price} onChange={(e) => setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, price: Number(e.target.value) } : p)))} className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
+              <article key={product.id} className="grid gap-2 rounded-3xl border border-white/50 bg-white/85 p-4 shadow-glass md:grid-cols-2">
+                <input value={product.name} onChange={(e) => setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, name: e.target.value } : p)))} className="rounded-xl border border-sand px-3 py-2" />
+                <input type="number" value={product.price} onChange={(e) => setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, price: Number(e.target.value) } : p)))} className="rounded-xl border border-sand px-3 py-2" />
                 <select
                   value={category}
                   onChange={(e) =>
@@ -647,7 +584,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
                       ),
                     )
                   }
-                  className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
+                  className="rounded-xl border border-sand px-3 py-2"
                 >
                   {allCategories.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -701,7 +638,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
                       ),
                     )
                   }
-                  className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
+                  className="rounded-xl border border-sand px-3 py-2"
                 />
                 <textarea
                   value={variantsEditorValue}
@@ -724,7 +661,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
                       }),
                     )
                   }
-                  className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 md:col-span-2"
+                  className="rounded-xl border border-sand px-3 py-2 md:col-span-2"
                   rows={3}
                   placeholder={`Weight and price options\n1 kg - 50\n2 kg - 100`}
                 />
@@ -748,11 +685,11 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
                       ),
                     )
                   }
-                  className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 md:col-span-2"
+                  className="rounded-xl border border-sand px-3 py-2 md:col-span-2"
                 />
                 <div className="flex items-center justify-end gap-2 md:col-span-2">
-                  <button onClick={() => handleUpdate(product)} className="rounded-lg bg-forest px-4 py-2 text-sm font-bold text-white hover:bg-forest/90 transition">Save</button>
-                  <button onClick={() => handleDelete(product)} className="rounded-lg bg-clay px-4 py-2 text-sm font-bold text-white hover:bg-clay/90 transition">Delete</button>
+                  <button onClick={() => handleUpdate(product)} className="rounded-xl bg-forest px-4 py-2 text-sm font-bold text-white">Save</button>
+                  <button onClick={() => handleDelete(product)} className="rounded-xl bg-clay px-4 py-2 text-sm font-bold text-white">Delete</button>
                 </div>
               </article>
             );
@@ -761,18 +698,18 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       )}
 
       {section === 'categories' && (
-        <section className="rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-white/50 bg-white/85 p-6 shadow-glass">
           <h2 className="font-headline text-2xl text-forest">Product Categories</h2>
           <div className="mt-4 flex gap-2">
-            <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Add category" className="flex-1 rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
-            <button onClick={addCategory} className="rounded-lg bg-forest px-4 py-3 font-bold text-white hover:bg-forest/90 transition">Add</button>
+            <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Add category" className="flex-1 rounded-xl border border-sand px-4 py-3" />
+            <button onClick={addCategory} className="rounded-xl bg-forest px-4 py-3 font-bold text-white">Add</button>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {allCategories.map((cat) => (
               <div key={cat} className="flex items-center gap-2 rounded-full bg-forest/10 px-3 py-2 text-sm">
                 <span>{cat}</span>
                 {cat !== 'Uncategorized' && (
-                  <button onClick={() => removeCategory(cat)} className="font-bold text-clay hover:text-clay/70">Delete</button>
+                  <button onClick={() => removeCategory(cat)} className="font-bold text-clay">Delete</button>
                 )}
               </div>
             ))}
@@ -781,38 +718,36 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       )}
 
       {section === 'feedback' && (
-        <section className="space-y-4 rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
+        <section className="space-y-5 rounded-3xl border border-white/50 bg-white/85 p-6 shadow-glass">
           <div>
             <h2 className="font-headline text-2xl text-forest">Pending Feedback</h2>
             <p className="mt-1 text-sm text-brown/80">Approve feedback to show it in the moving customer review section on Home.</p>
           </div>
 
           {pendingFeedback.length === 0 ? (
-            <p className="rounded-lg bg-forest/5 p-4 text-sm text-brown">No pending feedback right now.</p>
+            <p className="rounded-2xl bg-forest/5 p-4 text-sm text-brown">No pending feedback right now.</p>
           ) : (
             <div className="space-y-3">
               {pendingFeedback.map((item) => (
-                <article key={item.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)] md:p-5">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <h3 className="font-headline text-lg text-slate-900">{item.customer_name}</h3>
-                      <p className="text-xs text-slate-500">{item.city_state}</p>
-                    </div>
-                    <span className="rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-700">Pending</span>
+                <article key={item.id} className="rounded-2xl border border-sand/50 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="font-headline text-xl text-forest">{item.customer_name}</h3>
+                    <p className="text-sm font-bold text-forest">{'Γÿà'.repeat(Math.max(1, Math.min(5, Math.round(item.rating))))}</p>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">{item.review_text}</p>
+                  <p className="text-sm font-semibold text-brown/80">{item.city_state}</p>
+                  <p className="mt-2 text-sm text-brown">{item.review_text}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       disabled={busy}
                       onClick={() => handleApproveFeedback(item)}
-                      className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition disabled:opacity-50 md:px-4 md:text-sm"
+                      className="rounded-xl bg-forest px-4 py-2 text-sm font-bold text-white"
                     >
-                      Approve
+                      Add To Moving Feedback
                     </button>
                     <button
                       disabled={busy}
                       onClick={() => handleDeleteFeedback(item)}
-                      className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-500 transition disabled:opacity-50 md:px-4 md:text-sm"
+                      className="rounded-xl bg-clay px-4 py-2 text-sm font-bold text-white"
                     >
                       Delete
                     </button>
@@ -827,24 +762,29 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
           </div>
 
           {approvedFeedback.length === 0 ? (
-            <p className="rounded-lg bg-forest/5 p-4 text-sm text-brown">No approved feedback yet.</p>
+            <p className="rounded-2xl bg-forest/5 p-4 text-sm text-brown">No approved feedback yet.</p>
           ) : (
             <div className="space-y-3">
               {approvedFeedback.map((item) => (
-                <article key={item.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)] md:p-5">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <h3 className="font-headline text-lg text-slate-900">{item.customer_name}</h3>
-                      <p className="text-xs text-slate-500">{item.city_state}</p>
-                    </div>
-                    <span className="rounded-full px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-800">Approved</span>
+                <article key={item.id} className="rounded-2xl border border-sand/50 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="font-headline text-xl text-forest">{item.customer_name}</h3>
+                    <p className="text-sm font-bold text-forest">{'Γÿà'.repeat(Math.max(1, Math.min(5, Math.round(item.rating))))}</p>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">{item.review_text}</p>
+                  <p className="text-sm font-semibold text-brown/80">{item.city_state}</p>
+                  <p className="mt-2 text-sm text-brown">{item.review_text}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       disabled={busy}
+                      onClick={() => handleRemoveApprovedFeedback(item)}
+                      className="rounded-xl bg-moss px-4 py-2 text-sm font-bold text-white"
+                    >
+                      Remove From Moving Feedback
+                    </button>
+                    <button
+                      disabled={busy}
                       onClick={() => handleDeleteFeedback(item)}
-                      className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-500 transition disabled:opacity-50 md:px-4 md:text-sm"
+                      className="rounded-xl bg-clay px-4 py-2 text-sm font-bold text-white"
                     >
                       Delete
                     </button>
@@ -857,22 +797,22 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       )}
 
       {section === 'carousel' && (
-        <section className="space-y-5 rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
+        <section className="space-y-6 rounded-3xl border border-white/50 bg-white/85 p-6 shadow-glass">
           {([
             ['top', topImages],
             ['marquee', marqueeImages],
           ] as [CarouselSection, string[]][]).map(([sectionName, images]) => (
-            <div key={sectionName} className="space-y-3 rounded-lg border border-sand/30 bg-white/60 p-4">
+            <div key={sectionName} className="space-y-3 rounded-2xl border border-sand/50 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-headline text-lg capitalize text-forest">{sectionName} Section</h3>
-                <button onClick={() => handleCarouselReset(sectionName)} className="rounded-lg bg-clay px-3 py-2 text-sm font-bold text-white hover:bg-clay/90 transition">Reset Defaults</button>
+                <h3 className="font-headline text-xl capitalize text-forest">{sectionName} Section</h3>
+                <button onClick={() => handleCarouselReset(sectionName)} className="rounded-xl bg-clay px-3 py-2 text-sm font-bold text-white">Reset Defaults</button>
               </div>
-              <input type="file" accept="image/*" onChange={(e) => handleCarouselUpload(sectionName, e.target.files?.[0] ?? null)} className="text-sm" />
+              <input type="file" accept="image/*" onChange={(e) => handleCarouselUpload(sectionName, e.target.files?.[0] ?? null)} />
               <div className="grid gap-3 md:grid-cols-3">
                 {images.map((url) => (
-                  <div key={url} className="overflow-hidden rounded-lg border border-sand/30">
+                  <div key={url} className="overflow-hidden rounded-xl border border-sand/50">
                     <img src={url} alt="Carousel" className="h-36 w-full object-cover" />
-                    <button onClick={() => handleCarouselRemove(sectionName, url)} className="w-full bg-clay py-2 text-sm font-bold text-white hover:bg-clay/90 transition">Remove</button>
+                    <button onClick={() => handleCarouselRemove(sectionName, url)} className="w-full bg-clay py-2 text-sm font-bold text-white">Remove</button>
                   </div>
                 ))}
               </div>
@@ -882,44 +822,43 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       )}
 
       {section === 'blog' && (
-        <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 text-slate-800 shadow-sm md:p-6">
+        <section className="space-y-6 rounded-3xl border border-white/50 bg-white/85 p-6 shadow-glass">
           <div>
-            <h2 className="font-headline text-xl text-slate-900 md:text-2xl">Blog Stories</h2>
-            <p className="mt-1 text-xs text-slate-600 md:text-sm">Add or update stories that appear on the Stories from Kadavur page.</p>
+            <h2 className="font-headline text-2xl text-forest">Blog Stories</h2>
+            <p className="mt-1 text-sm text-brown/80">Add or update stories that appear on the Stories from Kadavur page.</p>
           </div>
 
-          {!editingBlogId && (
-            <form onSubmit={handleSaveBlog} className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:gap-4 md:grid-cols-2 md:p-5">
+          <form onSubmit={handleSaveBlog} className="grid gap-3 rounded-3xl border border-sand/40 bg-white/90 p-5 shadow-[0_12px_24px_rgba(31,79,53,0.08)] md:grid-cols-2">
             <input
               placeholder="Story title"
               value={blogForm.title}
               onChange={(event) => setBlogForm((prev) => ({ ...prev, title: event.target.value }))}
-              className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
+              className="rounded-xl border border-sand px-4 py-3"
               required
             />
             <input
               placeholder="Author"
               value={blogForm.author}
               onChange={(event) => setBlogForm((prev) => ({ ...prev, author: event.target.value }))}
-              className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
+              className="rounded-xl border border-sand px-4 py-3"
               required
             />
             <textarea
               placeholder="Short excerpt (optional)"
               value={blogForm.excerpt}
               onChange={(event) => setBlogForm((prev) => ({ ...prev, excerpt: event.target.value }))}
-              rows={2}
-              className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 md:col-span-2 md:rows-3"
+              rows={3}
+              className="rounded-xl border border-sand px-4 py-3 md:col-span-2"
             />
             <textarea
               placeholder="Story details"
               value={blogForm.body}
               onChange={(event) => setBlogForm((prev) => ({ ...prev, body: event.target.value }))}
-              rows={4}
-              className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 md:col-span-2 md:rows-6"
+              rows={6}
+              className="rounded-xl border border-sand px-4 py-3 md:col-span-2"
               required
             />
-            <label className="flex items-center gap-2 text-xs text-slate-600 md:col-span-2 md:text-sm">
+            <label className="flex items-center gap-2 text-sm text-brown/80">
               <input
                 type="checkbox"
                 checked={blogForm.is_published}
@@ -927,105 +866,45 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
               />
               Publish to site
             </label>
-              <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:gap-2 md:col-span-2">
-                <button disabled={busy} className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-600 transition disabled:opacity-50 md:px-5 md:py-3">
-                  {busy ? 'Saving...' : 'Add Story'}
-                </button>
-                <button type="button" onClick={resetBlogForm} className="rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-amber-400 transition md:px-5 md:py-3">
-                  Clear
-                </button>
-              </div>
-            </form>
-          )}
+            <div className="flex flex-wrap gap-2 md:col-span-2">
+              <button disabled={busy} className="rounded-xl bg-forest px-5 py-3 font-bold text-white">
+                {busy ? 'Saving...' : editingBlogId ? 'Update Story' : 'Add Story'}
+              </button>
+              <button type="button" onClick={resetBlogForm} className="rounded-xl border border-forest/30 px-5 py-3 font-bold text-forest">
+                Clear
+              </button>
+            </div>
+          </form>
 
           <div className="space-y-3">
             {blogs.length === 0 ? (
-              <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600 md:p-4">No blog stories yet.</p>
+              <p className="rounded-2xl bg-forest/5 p-4 text-sm text-brown">No blog stories yet.</p>
             ) : (
               blogs.map((post) => (
-                <article key={post.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)] md:p-5">
-                  {editingBlogId === post.id ? (
-                    <form onSubmit={handleSaveBlog} className="grid gap-3 md:grid-cols-2">
-                      <div className="flex flex-wrap items-center justify-between gap-2 md:col-span-2">
-                        <h3 className="font-headline text-base text-slate-900 md:text-lg">Editing story</h3>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${blogForm.is_published ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}`}>
-                          {blogForm.is_published ? 'Published' : 'Draft'}
-                        </span>
-                      </div>
-                      <input
-                        placeholder="Story title"
-                        value={blogForm.title}
-                        onChange={(event) => setBlogForm((prev) => ({ ...prev, title: event.target.value }))}
-                        className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 md:col-span-2"
-                        required
-                      />
-                      <input
-                        placeholder="Author"
-                        value={blogForm.author}
-                        onChange={(event) => setBlogForm((prev) => ({ ...prev, author: event.target.value }))}
-                        className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                        required
-                      />
-                      <label className="flex items-center gap-2 text-xs text-slate-600 md:justify-end md:text-sm">
-                        <input
-                          type="checkbox"
-                          checked={blogForm.is_published}
-                          onChange={(event) => setBlogForm((prev) => ({ ...prev, is_published: event.target.checked }))}
-                        />
-                        Publish to site
-                      </label>
-                      <textarea
-                        placeholder="Short excerpt (optional)"
-                        value={blogForm.excerpt}
-                        onChange={(event) => setBlogForm((prev) => ({ ...prev, excerpt: event.target.value }))}
-                        rows={2}
-                        className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 md:col-span-2 md:rows-3"
-                      />
-                      <textarea
-                        placeholder="Story details"
-                        value={blogForm.body}
-                        onChange={(event) => setBlogForm((prev) => ({ ...prev, body: event.target.value }))}
-                        rows={4}
-                        className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 md:col-span-2 md:rows-6"
-                        required
-                      />
-                      <div className="flex flex-col gap-2 md:flex-row md:col-span-2">
-                        <button disabled={busy} className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-500 transition md:px-4 md:text-sm">
-                          {busy ? 'Saving...' : 'Save Changes'}
-                        </button>
-                        <button type="button" onClick={handleCancelBlogEdit} className="rounded-lg bg-slate-500 px-3 py-2 text-xs font-bold text-white hover:bg-slate-400 transition md:px-4 md:text-sm">
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <>
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <h3 className="font-headline text-base text-slate-900 md:text-lg">{post.title}</h3>
-                          <p className="text-xs text-slate-500 md:text-sm">{post.author}</p>
-                        </div>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${post.is_published ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}`}>
-                          {post.is_published ? 'Published' : 'Draft'}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-xs leading-5 text-slate-600 md:text-sm">{post.excerpt || post.body}</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <button onClick={() => handleEditBlog(post)} className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-500 transition md:px-4 md:text-sm">Edit</button>
-                        <button onClick={() => handleToggleBlogPublish(post)} className="rounded-lg bg-violet-600 px-3 py-2 text-xs font-bold text-white hover:bg-violet-500 transition md:px-4 md:text-sm">
-                          {post.is_published ? 'Unpublish' : 'Publish'}
-                        </button>
-                        <button onClick={() => handleDeleteBlog(post)} className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-500 transition md:px-4 md:text-sm">Delete</button>
-                      </div>
-                    </>
-                  )}
+                <article key={post.id} className="rounded-3xl border border-sand/40 bg-white/90 p-5 shadow-[0_12px_22px_rgba(31,79,53,0.08)]">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h3 className="font-headline text-xl text-forest">{post.title}</h3>
+                      <p className="text-sm text-brown/80">{post.author}</p>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${post.is_published ? 'bg-forest/10 text-forest' : 'bg-clay/10 text-clay'}`}>
+                      {post.is_published ? 'Published' : 'Draft'}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-brown/80">{post.excerpt || post.body}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button onClick={() => handleEditBlog(post)} className="rounded-xl bg-forest px-4 py-2 text-sm font-bold text-white">Edit</button>
+                    <button onClick={() => handleToggleBlogPublish(post)} className="rounded-xl bg-moss px-4 py-2 text-sm font-bold text-white">
+                      {post.is_published ? 'Unpublish' : 'Publish'}
+                    </button>
+                    <button onClick={() => handleDeleteBlog(post)} className="rounded-xl bg-clay px-4 py-2 text-sm font-bold text-white">Delete</button>
+                  </div>
                 </article>
               ))
             )}
           </div>
         </section>
       )}
-      </main>
     </div>
   );
 }
