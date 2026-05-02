@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { addBlog, deleteBlog, getAllBlogs, updateBlog } from '../api/blogs';
-import { addCarouselImage, getCarouselImages, removeCarouselImage, resetCarouselImages } from '../api/carousel';
+import { addCarouselImage, getCarouselImages, removeCarouselImage } from '../api/carousel';
 import { deleteFeedback, getAllFeedback, setFeedbackApproved } from '../api/feedback';
 import { addProduct, deleteProduct, getProducts, updateProduct } from '../api/products';
 import { supabase } from '../lib/supabase';
@@ -71,6 +71,18 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [blogForm, setBlogForm] = useState(emptyBlogForm);
   const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [editingProductForm, setEditingProductForm] = useState({
+    name: '',
+    price: 0,
+    description: '',
+    category: 'Uncategorized',
+    stock: 0,
+    discount: 0,
+    variants: '',
+    file: null as File | null,
+  });
+  const [productQuery, setProductQuery] = useState('');
 
   const reload = async () => {
     const [productRows, top, blogRows] = await Promise.all([
@@ -219,23 +231,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     }
   };
 
-  const handleUpdate = async (product: Product) => {
-    setBusy(true);
-    setNotice('');
-    try {
-      await updateProduct(product.id, {
-        name: product.name,
-        price: Number(product.price),
-        description: product.description,
-      });
-      setNotice('Product updated.');
-      await reload();
-    } catch {
-      setNotice('Update failed.');
-    } finally {
-      setBusy(false);
-    }
-  };
+  // legacy per-product update handler (kept for compatibility) — admin uses inline card editor now
 
   const handleDelete = async (product: Product) => {
     if (!window.confirm('Delete this product?')) return;
@@ -332,20 +328,6 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     }
   };
 
-  const handleCarouselReset = async (sectionName: CarouselSection) => {
-    if (!window.confirm('Reset this section to local default images?')) return;
-    setBusy(true);
-    try {
-      await resetCarouselImages(sectionName);
-      setNotice('Carousel reset to defaults.');
-      await reload();
-    } catch {
-      setNotice('Failed to reset carousel.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const handleApproveFeedback = async (item: Feedback) => {
     setBusy(true);
     setNotice('');
@@ -355,20 +337,6 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       await reload();
     } catch {
       setNotice('Failed to approve feedback.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleRemoveApprovedFeedback = async (item: Feedback) => {
-    setBusy(true);
-    setNotice('');
-    try {
-      await setFeedbackApproved(item.id, false);
-      setNotice('Feedback removed from moving section.');
-      await reload();
-    } catch {
-      setNotice('Failed to remove feedback from moving section.');
     } finally {
       setBusy(false);
     }
@@ -612,148 +580,157 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       )}
 
       {section === 'edit' && (
-        <div className="space-y-3">
-          {products.map((product) => {
-            const category = parseCategoryFromDescription(product.description || '');
-            const stock = parseStockFromDescription(product.description || '');
-            const discount = parseDiscountFromDescription(product.description || '');
-            const variants = parseVariantsFromDescription(product.description || '');
-            const variantsEditorValue = formatVariantsForEditor(variants);
-            const clean = stripMetaTags(product.description || '');
-            return (
-              <article key={product.id} className="grid gap-2 rounded-lg border border-sand/30 bg-white p-4 shadow-sm md:grid-cols-2">
-                <input value={product.name} onChange={(e) => setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, name: e.target.value } : p)))} className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
-                <input type="number" value={product.price} onChange={(e) => setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, price: Number(e.target.value) } : p)))} className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
-                <select
-                  value={category}
-                  onChange={(e) =>
-                    setProducts((prev) =>
-                      prev.map((p) =>
-                        p.id === product.id
-                          ? {
-                              ...p,
-                              description: buildDescriptionWithMeta({
-                                description: clean,
-                                category: e.target.value,
-                                stock,
-                                discount,
-                                variants,
-                              }),
+        <div>
+          <div className="mb-4">
+            <input
+              placeholder="Search products to edit..."
+              value={productQuery}
+              onChange={(e) => setProductQuery(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2"
+            />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {products
+              .filter((p) => (productQuery ? p.name.toLowerCase().includes(productQuery.toLowerCase()) : true))
+              .map((product) => {
+                const category = parseCategoryFromDescription(product.description || '');
+                const stock = parseStockFromDescription(product.description || '');
+                const discount = parseDiscountFromDescription(product.description || '');
+                const variants = parseVariantsFromDescription(product.description || '');
+                const variantsEditorValue = formatVariantsForEditor(variants);
+                const clean = stripMetaTags(product.description || '');
+
+                const isEditing = editingProductId === product.id;
+
+                return (
+                  <article key={product.id} className="group relative overflow-visible rounded-3xl border border-white/70 bg-white p-0 shadow-sm">
+                    <div className="relative aspect-[16/10] overflow-hidden bg-cream sm:aspect-[4/3]">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-sm text-brown">No image</div>
+                      )}
+                    </div>
+
+                    <div className="p-4">
+                      {!isEditing ? (
+                        <>
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-headline text-lg text-brown">{product.name}</h3>
+                              <p className="mt-1 text-xs text-brown/80">{clean}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs font-extrabold text-forest">Rs.{product.price.toFixed(2)}</p>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex gap-2">
+                            <button
+                              onClick={() => {
+                                setEditingProductId(product.id);
+                                setEditingProductForm({
+                                  name: product.name,
+                                  price: product.price,
+                                  description: clean,
+                                  category,
+                                  stock,
+                                  discount,
+                                  variants: variantsEditorValue,
+                                  file: null,
+                                });
+                              }}
+                              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-500"
+                            >
+                              Edit
+                            </button>
+                            <button onClick={() => handleDelete(product)} className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white hover:bg-rose-500">Delete</button>
+                          </div>
+                        </>
+                      ) : (
+                        <form
+                          onSubmit={async (e) => {
+                            e.preventDefault();
+                            setBusy(true);
+                            try {
+                              const payload: any = {
+                                name: editingProductForm.name,
+                                price: Number(editingProductForm.price),
+                                description: buildDescriptionWithMeta({
+                                  description: editingProductForm.description,
+                                  category: editingProductForm.category,
+                                  stock: Number(editingProductForm.stock),
+                                  discount: Number(editingProductForm.discount),
+                                  variants: parseVariantsEditorInput(editingProductForm.variants),
+                                }),
+                              };
+                              if (editingProductForm.file) {
+                                const imageUrl = await uploadProductImage(editingProductForm.file);
+                                payload.image_url = imageUrl;
+                              }
+                              await updateProduct(product.id, payload);
+                              setNotice('Product updated.');
+                              setEditingProductId(null);
+                              await reload();
+                            } catch {
+                              setNotice('Update failed.');
+                            } finally {
+                              setBusy(false);
                             }
-                          : p,
-                      ),
-                    )
-                  }
-                  className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
-                >
-                  {allCategories.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  min="0"
-                  value={stock}
-                  onChange={(e) =>
-                    setProducts((prev) =>
-                      prev.map((p) =>
-                        p.id === product.id
-                          ? {
-                              ...p,
-                              description: buildDescriptionWithMeta({
-                                description: clean,
-                                category,
-                                stock: Number(e.target.value),
-                                discount,
-                                variants,
-                              }),
-                            }
-                          : p,
-                      ),
-                    )
-                  }
-                  className="rounded-xl border border-sand px-3 py-2"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  value={discount}
-                  onChange={(e) =>
-                    setProducts((prev) =>
-                      prev.map((p) =>
-                        p.id === product.id
-                          ? {
-                              ...p,
-                              description: buildDescriptionWithMeta({
-                                description: clean,
-                                category,
-                                stock,
-                                discount: Number(e.target.value),
-                                variants,
-                              }),
-                            }
-                          : p,
-                      ),
-                    )
-                  }
-                  className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
-                />
-                <textarea
-                  value={variantsEditorValue}
-                  onChange={(e) =>
-                    setProducts((prev) =>
-                      prev.map((p) => {
-                        if (p.id !== product.id) return p;
-                        const nextVariants = parseVariantsEditorInput(e.target.value);
-                        return {
-                          ...p,
-                          price: nextVariants[0]?.price ?? p.price,
-                          description: buildDescriptionWithMeta({
-                            description: clean,
-                            category,
-                            stock,
-                            discount,
-                            variants: nextVariants,
-                          }),
-                        };
-                      }),
-                    )
-                  }
-                  className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 md:col-span-2"
-                  rows={3}
-                  placeholder={`Weight and price options\n1 kg - 50\n2 kg - 100`}
-                />
-                <textarea
-                  value={clean}
-                  onChange={(e) =>
-                    setProducts((prev) =>
-                      prev.map((p) =>
-                        p.id === product.id
-                          ? {
-                              ...p,
-                              description: buildDescriptionWithMeta({
-                                description: e.target.value,
-                                category,
-                                stock,
-                                discount,
-                                variants,
-                              }),
-                            }
-                          : p,
-                      ),
-                    )
-                  }
-                  className="rounded-lg border border-sand px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30 md:col-span-2"
-                />
-                <div className="flex items-center justify-end gap-2 md:col-span-2">
-                  <button onClick={() => handleUpdate(product)} className="rounded-lg bg-forest px-4 py-2 text-sm font-bold text-white hover:bg-forest/90 transition">Save</button>
-                  <button onClick={() => handleDelete(product)} className="rounded-lg bg-clay px-4 py-2 text-sm font-bold text-white hover:bg-clay/90 transition">Delete</button>
-                </div>
-              </article>
-            );
-          })}
+                          }}
+                          className="space-y-2"
+                        >
+                          <div>
+                            <label className="text-xs font-semibold text-slate-700">Product Name</label>
+                            <input value={editingProductForm.name} onChange={(e) => setEditingProductForm((p) => ({ ...p, name: e.target.value }))} className="w-full rounded-lg border px-2 py-1 text-sm" />
+                          </div>
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <label className="text-xs font-semibold text-slate-700">Price</label>
+                              <input type="number" value={String(editingProductForm.price)} onChange={(e) => setEditingProductForm((p) => ({ ...p, price: Number(e.target.value) }))} className="w-full rounded-lg border px-2 py-1 text-sm" />
+                            </div>
+                            <div className="flex-1">
+                              <label className="text-xs font-semibold text-slate-700">Category</label>
+                              <select value={editingProductForm.category} onChange={(e) => setEditingProductForm((p) => ({ ...p, category: e.target.value }))} className="w-full rounded-lg border px-2 py-1 text-sm z-50">
+                                {allCategories.map((cat) => (
+                                  <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <label className="text-xs font-semibold text-slate-700">Stock</label>
+                              <input type="number" value={String(editingProductForm.stock)} onChange={(e) => setEditingProductForm((p) => ({ ...p, stock: Number(e.target.value) }))} className="w-full rounded-lg border px-2 py-1 text-sm" />
+                            </div>
+                            <div className="flex-1">
+                              <label className="text-xs font-semibold text-slate-700">Discount %</label>
+                              <input type="number" value={String(editingProductForm.discount)} onChange={(e) => setEditingProductForm((p) => ({ ...p, discount: Number(e.target.value) }))} className="w-full rounded-lg border px-2 py-1 text-sm" />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-slate-700">Description</label>
+                            <textarea value={editingProductForm.description} onChange={(e) => setEditingProductForm((p) => ({ ...p, description: e.target.value }))} rows={2} className="w-full rounded-lg border px-2 py-1 text-sm" />
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-slate-700">Weight Options</label>
+                            <textarea value={editingProductForm.variants} onChange={(e) => setEditingProductForm((p) => ({ ...p, variants: e.target.value }))} rows={2} className="w-full rounded-lg border px-2 py-1 text-sm" placeholder={`1 kg - 50\n2 kg - 100`} />
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-slate-700">Change Image</label>
+                            <input type="file" accept="image/*" onChange={(e) => setEditingProductForm((p) => ({ ...p, file: e.target.files && e.target.files[0] ? e.target.files[0] : null }))} className="w-full text-xs" />
+                          </div>
+                          <div className="flex gap-2">
+                            <button type="submit" disabled={busy} className="flex-1 rounded-lg bg-forest px-2 py-1.5 text-xs font-bold text-white hover:bg-forest/90">Save</button>
+                            <button type="button" onClick={() => setEditingProductId(null)} className="flex-1 rounded-lg bg-slate-500 px-2 py-1.5 text-xs font-bold text-white hover:bg-slate-400">Cancel</button>
+                          </div>
+                        </form>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+          </div>
         </div>
       )}
 
@@ -764,15 +741,24 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
             <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Add category" className="flex-1 rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
             <button onClick={addCategory} className="rounded-lg bg-forest px-4 py-3 font-bold text-white hover:bg-forest/90 transition">Add</button>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {allCategories.map((cat) => (
-              <div key={cat} className="flex items-center gap-2 rounded-full bg-forest/10 px-3 py-2 text-sm">
-                <span>{cat}</span>
-                {cat !== 'Uncategorized' && (
-                  <button onClick={() => removeCategory(cat)} className="font-bold text-clay hover:text-clay/70">Delete</button>
-                )}
-              </div>
-            ))}
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {allCategories
+              .filter((cat) => cat !== 'Uncategorized')
+              .map((cat) => (
+                <div
+                  key={cat}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-sand/30 bg-forest/5 p-3 transition-colors duration-200 hover:bg-forest/10 hover:shadow-md cursor-pointer"
+                >
+                  <div>
+                    <p className="font-semibold text-slate-800">{cat}</p>
+                  </div>
+                  <div>
+                    <button onClick={() => removeCategory(cat)} className="rounded-md bg-rose-600 px-3 py-1 text-xs font-bold text-white hover:bg-rose-500">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
           </div>
         </section>
       )}
@@ -855,16 +841,16 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
 
       {section === 'carousel' && (
         <section className="space-y-5 rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
-          {[
+          {([
             ['top', topImages],
-          ].map(([sectionName, images]) => (
+          ] as [CarouselSection, string[]][]).map(([sectionName, images]) => (
             <div key={String(sectionName)} className="space-y-3 rounded-lg border border-sand/30 bg-white/60 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-headline text-lg capitalize text-forest">{sectionName} Section</h3>
               </div>
               <input type="file" accept="image/*" onChange={(e) => handleCarouselUpload(sectionName, e.target.files?.[0] ?? null)} className="text-sm" />
               <div className="grid gap-3 md:grid-cols-3">
-                {images.map((url) => (
+                {images.map((url: string) => (
                   <div key={url} className="overflow-hidden rounded-lg border border-sand/30">
                     <img src={url} alt="Carousel" className="h-36 w-full object-cover" />
                     <button onClick={() => handleCarouselRemove(sectionName, url)} className="w-full bg-clay py-2 text-sm font-bold text-white hover:bg-clay/90 transition">Remove</button>
