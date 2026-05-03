@@ -120,8 +120,18 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   const pendingFeedback = useMemo(() => feedbackItems.filter((item) => !item.is_approved), [feedbackItems]);
 
   const approvedFeedback = useMemo(() => feedbackItems.filter((item) => item.is_approved), [feedbackItems]);
+  const sectionTabs: Array<{ key: Section; label: string; hint: string }> = [
+    { key: 'add', label: 'Add Product', hint: 'Create a new listing' },
+    { key: 'edit', label: 'Edit Products', hint: 'Update price and stock' },
+    { key: 'categories', label: 'Categories', hint: 'Manage catalog groups' },
+    { key: 'carousel', label: 'Carousel', hint: 'Refresh homepage visuals' },
+    { key: 'feedback', label: 'Feedback', hint: 'Approve customer reviews' },
+    { key: 'blog', label: 'Blog', hint: 'Publish new stories' },
+  ];
+  const activeTab = sectionTabs.find((tab) => tab.key === section) ?? sectionTabs[0];
 
-  const onLogin = () => {
+  const onLogin = (event?: React.FormEvent) => {
+    event?.preventDefault();
     const name = loginName.trim();
     if (!name) {
       setAuthError('Admin login ID is required.');
@@ -446,15 +456,16 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
 
   if (!authenticated) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <section className="animate-floatIn mx-auto w-full max-w-md rounded-lg border border-sand/30 bg-white p-8 shadow-sm">
-          <h1 className="font-headline text-3xl text-forest">Admin Login</h1>
-          <label className="mt-4 block text-sm font-bold text-brown">Admin login ID</label>
+      <div className="flex min-h-screen items-center justify-center bg-app px-4 py-10">
+        <form onSubmit={onLogin} className="mx-auto w-full max-w-md rounded-2xl border border-[#b7d9c7] bg-white p-8">
+          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-forest/70">Senkulatharu Control Center</p>
+          <h1 className="mt-2 font-headline text-3xl text-forest">Admin Login</h1>
+          <label className="mt-6 block text-sm font-bold text-brown">Admin login ID</label>
           <input
             type="text"
             value={loginName}
             onChange={(event) => setLoginName(event.target.value)}
-            className="mt-2 w-full rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
+            className="mt-2 w-full rounded-xl border border-[#bddccc] bg-[#fbfefc] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
             placeholder="Enter admin login ID"
           />
           <label className="mt-4 block text-sm font-bold text-brown">Password</label>
@@ -462,83 +473,96 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-2 w-full rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
+            className="mt-2 w-full rounded-xl border border-[#bddccc] bg-[#fbfefc] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
             placeholder="Enter admin password"
           />
-          {authError && <p className="mt-2 text-sm text-clay">{authError}</p>}
-          <button onClick={onLogin} className="mt-4 w-full rounded-lg bg-forest px-4 py-3 font-bold text-white hover:bg-forest/90 transition">
+          {authError && <p className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-clay">{authError}</p>}
+          <button type="submit" className="mt-5 w-full rounded-xl bg-forest px-4 py-3 font-bold text-white transition hover:bg-forest/90">
             Login
           </button>
           <div className="mt-4 text-center">
             <button
               type="button"
               onClick={() => onNavigate?.('home')}
-              className="text-sm text-forest/70 hover:text-forest"
+              className="text-sm font-semibold text-forest/70 hover:text-forest"
             >
               Back to home
             </button>
           </div>
-        </section>
+        </form>
       </div>
     );
   }
-
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-app pb-10">
       {/* Navigation Bar */}
-      <nav className="sticky top-0 z-50 bg-gradient-to-r from-forest to-moss text-white shadow-lg">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="font-headline text-2xl font-bold">Admin Panel</h1>
-            {adminUser && <p className="text-xs text-cream/80">Logged in as: {adminUser}</p>}
+      <nav className="sticky top-0 z-50 border-b border-[#d5eadf] bg-[linear-gradient(90deg,#0f5e3f_0%,#1d7a52_56%,#0f5e3f_100%)] text-white">
+        <div className="w-full px-4 py-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#e8f9ef]">Dashboard</p>
+              <h1 className="font-headline text-2xl font-bold">Admin Panel</h1>
+              {adminUser && <p className="text-xs text-cream/80">Logged in as: {adminUser}</p>}
+            </div>
+            <button
+              onClick={() => setAuthenticated(false)}
+              className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-rose-500"
+            >
+              Logout
+            </button>
           </div>
-          <button
-            onClick={() => setAuthenticated(false)}
-              className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-rose-500"
-          >
-            Logout
-          </button>
         </div>
       </nav>
-
       {/* Tab Navigation */}
-      <div className="bg-white/50 border-b border-sand sticky top-[72px] z-40">
+      <div className="sticky top-[90px] z-40 border-b border-[#deece4] bg-white">
         <div className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
-          <div className="flex gap-1 overflow-x-auto py-2">
-            {[
-              ['add', '➕ Add Product'],
-              ['edit', '✏️ Edit Products'],
-              ['categories', '🏷️ Categories'],
-              ['carousel', '🖼️ Carousel'],
-              ['feedback', '💬 Feedback'],
-              ['blog', '📝 Blog'],
-            ].map(([key, label]) => (
+          <div className="flex gap-2 overflow-x-auto py-3">
+            {sectionTabs.map((tab) => (
               <button
-                key={key}
-                onClick={() => setSection(key as Section)}
-                className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-bold transition ${
-                  section === key
-                    ? 'bg-forest text-white shadow-md'
-                    : 'bg-white/70 text-forest hover:bg-white'
+                key={tab.key}
+                onClick={() => setSection(tab.key)}
+                className={`whitespace-nowrap rounded-xl border px-4 py-2 text-sm font-bold transition ${
+                  section === tab.key
+                    ? 'border-forest bg-forest text-white'
+                    : 'border-[#cfe3d8] bg-white text-forest hover:border-[#9ac9b3] hover:bg-[#f4faf7]'
                 }`}
               >
-                {label}
+                {tab.label}
               </button>
             ))}
           </div>
         </div>
       </div>
-
       {/* Main Content */}
-      <main className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 py-6 pb-8">
+      <main className="w-full px-4 py-6 pb-8 sm:px-6 md:px-8 lg:px-16 xl:px-24">
+        <section className="mb-5 grid gap-3 rounded-2xl border border-[#d6e9df] bg-white p-4 md:grid-cols-[1.25fr_2fr] md:p-5">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#2e7753]">Active Workspace</p>
+            <h2 className="mt-1 font-headline text-2xl text-[#13462f]">{activeTab.label}</h2>
+            <p className="mt-1 text-sm text-[#326448]">{activeTab.hint}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              { label: 'Products', value: products.length },
+              { label: 'Categories', value: allCategories.filter((cat) => cat !== 'Uncategorized').length },
+              { label: 'Pending Feedback', value: pendingFeedback.length },
+              { label: 'Blog Stories', value: blogs.length },
+            ].map((item) => (
+              <article key={item.label} className="rounded-xl border border-[#d5eadf] bg-white px-3 py-2.5">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#4a7f63]">{item.label}</p>
+                <p className="mt-0.5 text-xl font-black text-[#174d33]">{item.value}</p>
+              </article>
+            ))}
+          </div>
+        </section>
         {notice && (
-          <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-700 shadow-sm">
+          <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-700">
             {notice}
           </div>
         )}
 
       {section === 'add' && (
-        <form onSubmit={handleAddProduct} className="rounded-lg border border-sand/30 bg-white p-6 shadow-sm space-y-3">
+        <form onSubmit={handleAddProduct} className="space-y-3 rounded-2xl border border-[#d6e9df] bg-white p-6">
           <h2 className="section-header font-headline text-xl text-forest">Add New Product</h2>
           <div>
             <label className="text-sm font-bold text-slate-800">Product Name</label>
@@ -609,13 +633,13 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       )}
 
       {section === 'edit' && (
-        <div>
-          <div className="mb-4">
+        <section className="rounded-2xl border border-[#d6e9df] bg-white p-5 md:p-6">
+          <div className="mb-4 rounded-xl border border-[#e0eee6] bg-[#f7fcf9] p-3">
             <input
               placeholder="Search products to edit..."
               value={productQuery}
               onChange={(e) => setProductQuery(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2"
+              className="w-full rounded-xl border border-[#bfdacc] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
             />
           </div>
 
@@ -633,7 +657,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
                 const isEditing = editingProductId === product.id;
 
                 return (
-                  <article key={product.id} className="group relative overflow-visible rounded-3xl border border-white/70 bg-white p-0 shadow-sm">
+                  <article key={product.id} className="group relative overflow-visible rounded-3xl border border-[#dbece3] bg-white p-0 transition">
                     <div className="relative aspect-[16/10] overflow-hidden bg-cream sm:aspect-[4/3]">
                       {product.image_url ? (
                         <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
@@ -760,15 +784,15 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
                 );
               })}
           </div>
-        </div>
+        </section>
       )}
 
       {section === 'categories' && (
-        <section className="rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-[#d6e9df] bg-white p-6">
           <h2 className="section-header font-headline text-2xl text-forest">Product Categories</h2>
           <div className="mt-4 flex gap-2">
-            <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Add category" className="flex-1 rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
-            <button onClick={addCategory} className="rounded-lg bg-forest px-4 py-3 font-bold text-white hover:bg-forest/90 transition">Add</button>
+            <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Add category" className="flex-1 rounded-xl border border-[#bfdacc] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
+            <button onClick={addCategory} className="rounded-xl bg-forest px-4 py-3 font-bold text-white hover:bg-forest/90 transition">Add</button>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {allCategories
@@ -776,7 +800,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
               .map((cat) => (
                 <div
                   key={cat}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-sand/30 bg-forest/5 p-3 transition-colors duration-200 hover:bg-forest/10 hover:shadow-md cursor-pointer"
+                  className="cursor-pointer flex items-center justify-between gap-3 rounded-xl border border-[#dcece4] bg-white p-3 transition-colors duration-200 hover:bg-forest/10"
                 >
                   <div>
                     <p className="font-semibold text-slate-800">{cat}</p>
@@ -793,7 +817,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       )}
 
       {section === 'feedback' && (
-        <section className="space-y-4 rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
+        <section className="space-y-4 rounded-2xl border border-[#d6e9df] bg-white p-6">
           <div>
             <h2 className="section-header font-headline text-2xl text-forest">Pending Feedback</h2>
             <p className="mt-1 text-sm text-brown/80">Approve feedback to show it in the moving customer review section on Home.</p>
@@ -804,7 +828,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
           ) : (
             <div className="space-y-3">
               {pendingFeedback.map((item) => (
-                <article key={item.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)] md:p-5">
+                <article key={item.id} className="rounded-lg border border-slate-200 bg-white p-4 md:p-5">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <h3 className="font-headline text-lg text-slate-900">{item.customer_name}</h3>
@@ -843,7 +867,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
           ) : (
             <div className="space-y-3">
               {approvedFeedback.map((item) => (
-                <article key={item.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)] md:p-5">
+                <article key={item.id} className="rounded-lg border border-slate-200 bg-white p-4 md:p-5">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <h3 className="font-headline text-lg text-slate-900">{item.customer_name}</h3>
@@ -869,18 +893,18 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       )}
 
       {section === 'carousel' && (
-        <section className="space-y-5 rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
+        <section className="space-y-5 rounded-2xl border border-[#d6e9df] bg-white p-6">
           {([
             ['top', topImages],
           ] as [CarouselSection, string[]][]).map(([sectionName, images]) => (
-            <div key={String(sectionName)} className="space-y-3 rounded-lg border border-sand/30 bg-white/60 p-4">
+            <div key={String(sectionName)} className="space-y-3 rounded-xl border border-[#dcece4] bg-[#f8fcfa] p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-headline text-lg capitalize text-forest">{sectionName} Section</h3>
               </div>
               <input type="file" accept="image/*" onChange={(e) => handleCarouselUpload(sectionName, e.target.files?.[0] ?? null)} className="text-sm" />
               <div className="grid gap-3 md:grid-cols-3">
                 {images.map((url: string) => (
-                  <div key={url} className="overflow-hidden rounded-lg border border-sand/30">
+                  <div key={url} className="overflow-hidden rounded-xl border border-[#dcece4]">
                     <img src={url} alt="Carousel" className="h-36 w-full object-cover" />
                     <button onClick={() => handleCarouselRemove(sectionName, url)} className="w-full bg-clay py-2 text-sm font-bold text-white hover:bg-clay/90 transition">Remove</button>
                   </div>
@@ -892,14 +916,14 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       )}
 
       {section === 'blog' && (
-        <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 text-slate-800 shadow-sm md:p-6">
+        <section className="space-y-4 rounded-2xl border border-[#d6e9df] bg-white p-4 text-slate-800 md:p-6">
           <div>
             <h2 className="section-header font-headline text-xl text-slate-900 md:text-2xl">Blog Stories</h2>
             <p className="mt-1 text-xs text-slate-600 md:text-sm">Add or update stories that appear on the Stories from Kadavur page.</p>
           </div>
 
           {!editingBlogId && (
-            <form onSubmit={handleSaveBlog} className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:gap-4 md:grid-cols-2 md:p-5">
+            <form onSubmit={handleSaveBlog} className="grid gap-3 rounded-xl border border-[#dcece4] bg-[#f7fcf9] p-4 md:grid-cols-2 md:gap-4 md:p-5">
             <input
               placeholder="Story title"
               value={blogForm.title}
@@ -953,7 +977,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
               <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600 md:p-4">No blog stories yet.</p>
             ) : (
               blogs.map((post) => (
-                <article key={post.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-[0_8px_18px_rgba(15,23,42,0.04)] md:p-5">
+                <article key={post.id} className="rounded-lg border border-slate-200 bg-white p-4 md:p-5">
                   {editingBlogId === post.id ? (
                     <form onSubmit={handleSaveBlog} className="grid gap-3 md:grid-cols-2">
                       <div className="flex flex-wrap items-center justify-between gap-2 md:col-span-2">
