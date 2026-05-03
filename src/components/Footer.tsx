@@ -19,8 +19,8 @@ export function Footer({ onNavigate }: FooterProps) {
           <h3 className="font-headline text-lg sm:text-xl">Quick Links</h3>
           <div className="mt-3 flex flex-col gap-1.5 text-sm">
             <button onClick={() => onNavigate('home')} className="text-left font-semibold hover:text-sun">Home</button>
-            <button onClick={() => onNavigate('products')} className="text-left font-semibold hover:text-sun">Products</button>
             <button onClick={() => onNavigate('about')} className="text-left font-semibold hover:text-sun">About</button>
+            <button onClick={() => onNavigate('products')} className="text-left font-semibold hover:text-sun">Products</button>
             <button onClick={() => onNavigate('blog')} className="text-left font-semibold hover:text-sun">Blog</button>
             <button onClick={() => onNavigate('contact')} className="text-left font-semibold hover:text-sun">Contact</button>
           </div>

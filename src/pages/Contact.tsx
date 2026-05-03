@@ -1,8 +1,6 @@
-import { FaWhatsapp } from 'react-icons/fa';
 import { FiClock, FiMail, FiMapPin, FiPhoneCall } from 'react-icons/fi';
-import { openWhatsApp } from '../utils/whatsapp';
 
-const FULL_ADDRESS = 'No.5/223, Kurumbapatti Palaviduthi (Post), Tharagampatti (S.O), Kadavur, Karur, Tamil Nadu, India - 621311';
+const FULL_ADDRESS = 'No.5/223, Kurumbapatti Palaviduthi (Post), Kadavur, Karur, Tamil Nadu 621311';
 const MAP_LAT = '10.6477778';
 const MAP_LNG = '78.2385556';
 const MAP_COORDS = `${MAP_LAT},${MAP_LNG}`;
@@ -47,8 +45,8 @@ const FAQS = [
     a: 'We coordinate delivery details directly over WhatsApp based on your location and availability.',
   },
   {
-    q: 'Is this a normal ecommerce checkout?',
-    a: 'No. Ordering is done directly with farmers through WhatsApp for transparent communication.',
+    q: 'Are your products genuine?',
+    a: 'Yes, all our products are authentic and naturally grown from the dryland farms of Kadavur.',
   },
   {
     q: 'Can we visit farms?',
@@ -128,14 +126,6 @@ export function Contact() {
 
             <div className="md:col-span-2 flex flex-wrap gap-2.5">
               <button className="rounded-xl bg-[#1f7a4f] px-5 py-3 font-bold text-white transition hover:bg-[#18613f]">Send Message</button>
-              <button
-                type="button"
-                onClick={() => openWhatsApp('Hello, I want to contact Senkulatharu.')}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#128c7e] px-5 py-3 font-bold text-white transition hover:bg-[#0f7166]"
-              >
-                <FaWhatsapp className="text-lg" />
-                WhatsApp
-              </button>
             </div>
           </div>
         </form>
