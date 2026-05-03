@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { FiMinus, FiPhone, FiPlus, FiShoppingCart, FiTrash2, FiX } from 'react-icons/fi';
 import type { CartItem, PageName } from '../types';
 import { buildWhatsappCartOrderMessage, openWhatsApp } from '../utils/whatsapp';
@@ -73,8 +74,8 @@ export function Header({
 
       </div>
 
-      <div className="absolute right-4 top-3 z-50 flex items-center gap-2">
-        <div className="relative flex items-center gap-2">
+      <div className="absolute right-4 top-3 z-50 flex items-center gap-3">
+        <div className="relative flex items-center gap-3">
           <a
             href="tel:+919080059430"
             className="inline-flex items-center gap-1.5 rounded-full bg-[#2563eb] px-3 py-2 text-xs font-extrabold text-white transition hover:scale-[1.03] hover:bg-[#1d4ed8] sm:gap-2 sm:px-4 sm:text-sm"
@@ -84,13 +85,24 @@ export function Header({
             <span className="sm:hidden">Call</span>
           </a>
 
+          <button
+            type="button"
+            onClick={() => openWhatsApp('Hello, I would like to know more about Senkulatharu products.')}
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-2 text-xs font-extrabold text-white transition hover:scale-[1.03] hover:bg-[#1fb85a] sm:gap-2 sm:px-4 sm:text-sm"
+            aria-label="WhatsApp"
+          >
+            <FaWhatsapp className="text-base sm:text-lg" />
+            <span className="hidden sm:inline">WhatsApp</span>
+            <span className="sm:hidden">WA</span>
+          </button>
+
           <div className="relative">
             <button
               type="button"
               onClick={handleOpenCart}
-              className="relative inline-flex items-center gap-1.5 rounded-full bg-forest px-3 py-2 text-xs font-extrabold text-white transition hover:scale-[1.03] hover:bg-[#1f5c45] sm:gap-2 sm:px-4 sm:text-sm"
+              className="relative inline-flex items-center gap-1 rounded-full bg-forest px-2 py-2 text-xs font-extrabold text-white transition hover:scale-[1.03] hover:bg-[#1f5c45] sm:gap-1.5 sm:px-3 sm:text-sm"
             >
-              <FiShoppingCart className="shrink-0" />
+              <FiShoppingCart className="shrink-0 text-base sm:text-lg" />
               <span>Cart</span>
               {cartCount > 0 && (
                 <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-black text-forest sm:min-w-6">

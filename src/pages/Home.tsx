@@ -90,7 +90,7 @@ const DEFAULT_CUSTOMER_FEEDBACK: FeedbackCard[] = [
   },
 ];
 
-const FEEDBACK_MIN_VISIBLE_ITEMS = 10;
+const FEEDBACK_MIN_VISIBLE_ITEMS = 40;
 
 const TOP_FALLBACK_IMAGES = ['/carousel/farmer1.svg', '/carousel/farmer2.svg', '/carousel/farmer3.svg'];
 const MARQUEE_FALLBACK_IMAGES = ['/carousel/farmer3.svg', '/carousel/farmer4.svg', '/carousel/farmer5.svg'];
@@ -353,13 +353,12 @@ export function Home({ onNavigate }: HomeProps) {
 
       <section className="relative -mx-[110px] bg-gradient-to-r from-[#2fa77d] via-[#47b892] to-[#73c9a8] py-6 md:-mx-[126px] lg:-mx-[134px]">
         <div className="relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#2d9f78] via-[#46b48d]/80 to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-[#228661]/55 to-transparent blur-md" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#68c4a2] via-[#5dbc99]/80 to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#4faa88]/55 to-transparent blur-md" />
-
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#2d9f78] to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-28 bg-gradient-to-r from-[#228661]/50 to-transparent blur-md" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#68c4a2] to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-[#4faa88]/50 to-transparent blur-md" />
           <div
-            className="flex w-max gap-4 animate-slideLeft"
+            className="flex w-max gap-4 animate-slideLeft px-4"
             style={{ animationDirection: 'normal', animationPlayState: paused ? 'paused' : 'running' }}
           >
             {marqueeTrack.map((item, index) => {
@@ -429,26 +428,27 @@ export function Home({ onNavigate }: HomeProps) {
       </section>
 
       <section className="relative left-1/2 right-1/2 -mx-[50vw] w-screen overflow-hidden bg-gradient-to-r from-[#2fa77d] via-[#49b890] to-[#73c9a8] py-5 md:py-6">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
-          <h2 className="section-header text-center font-headline text-xl text-white md:text-3xl">What Our Customers Say</h2>
+        <div className="w-full">
+          <div className="px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
+            <h2 className="section-header text-center font-headline text-xl text-white md:text-3xl">What Our Customers Say</h2>
+          </div>
 
           <div
             className="relative mt-3 overflow-hidden pb-2 pt-3"
             onMouseEnter={() => setFeedbackPaused(true)}
             onMouseLeave={() => setFeedbackPaused(false)}
           >
-            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#2d9f78] via-[#46b48d]/80 to-transparent" />
-            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-[#228661]/55 to-transparent blur-md" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#68c4a2] via-[#5dbc99]/80 to-transparent" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#4faa88]/55 to-transparent blur-md" />
-
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#2d9f78] to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-28 bg-gradient-to-r from-[#228661]/50 to-transparent blur-md" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#68c4a2] to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-28 bg-gradient-to-l from-[#4faa88]/50 to-transparent blur-md" />
             <div
               className="flex w-max gap-3 animate-slideLeft"
               style={{
-                animationDirection: 'normal',
-                animationDuration: '42s',
-                animationPlayState: feedbackPaused ? 'paused' : 'running',
-              }}
+                  animationDirection: 'normal',
+                  animationDuration: '168s',
+                  animationPlayState: feedbackPaused ? 'paused' : 'running',
+                }}
             >
               {feedbackTrack.map((item, index) => (
                 <article
