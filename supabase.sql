@@ -53,54 +53,159 @@ alter table public.carousel_images enable row level security;
 alter table public.feedback enable row level security;
 alter table public.blogs enable row level security;
 
--- Open policies to match current frontend-only behavior.
+-- Hosted-safe admin authorization
+create table if not exists public.admin_users (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+alter table public.admin_users enable row level security;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.admin_users a
+    where a.user_id = auth.uid()
+  );
+$$;
+
+grant execute on function public.is_admin() to anon, authenticated;
+
+drop policy if exists "admin_users_select_self" on public.admin_users;
+create policy "admin_users_select_self" on public.admin_users
+for select
+to authenticated
+using (user_id = auth.uid());
+
+-- Products
 drop policy if exists "products_public_select" on public.products;
-create policy "products_public_select" on public.products for select using (true);
-
 drop policy if exists "products_public_insert" on public.products;
-create policy "products_public_insert" on public.products for insert with check (true);
-
 drop policy if exists "products_public_update" on public.products;
-create policy "products_public_update" on public.products for update using (true) with check (true);
-
 drop policy if exists "products_public_delete" on public.products;
-create policy "products_public_delete" on public.products for delete using (true);
+create policy "products_public_select" on public.products
+for select
+using (true);
 
+drop policy if exists "products_admin_insert" on public.products;
+create policy "products_admin_insert" on public.products
+for insert
+to authenticated
+with check (public.is_admin());
+
+drop policy if exists "products_admin_update" on public.products;
+create policy "products_admin_update" on public.products
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+drop policy if exists "products_admin_delete" on public.products;
+create policy "products_admin_delete" on public.products
+for delete
+to authenticated
+using (public.is_admin());
+
+-- Carousel
 drop policy if exists "carousel_public_select" on public.carousel_images;
-create policy "carousel_public_select" on public.carousel_images for select using (true);
-
 drop policy if exists "carousel_public_insert" on public.carousel_images;
-create policy "carousel_public_insert" on public.carousel_images for insert with check (true);
-
 drop policy if exists "carousel_public_update" on public.carousel_images;
-create policy "carousel_public_update" on public.carousel_images for update using (true) with check (true);
-
 drop policy if exists "carousel_public_delete" on public.carousel_images;
-create policy "carousel_public_delete" on public.carousel_images for delete using (true);
+create policy "carousel_public_select" on public.carousel_images
+for select
+using (true);
 
-drop policy if exists "feedback_public_select" on public.feedback;
-create policy "feedback_public_select" on public.feedback for select using (true);
+drop policy if exists "carousel_admin_insert" on public.carousel_images;
+create policy "carousel_admin_insert" on public.carousel_images
+for insert
+to authenticated
+with check (public.is_admin());
 
+drop policy if exists "carousel_admin_update" on public.carousel_images;
+create policy "carousel_admin_update" on public.carousel_images
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+drop policy if exists "carousel_admin_delete" on public.carousel_images;
+create policy "carousel_admin_delete" on public.carousel_images
+for delete
+to authenticated
+using (public.is_admin());
+
+-- Feedback
 drop policy if exists "feedback_public_insert" on public.feedback;
-create policy "feedback_public_insert" on public.feedback for insert with check (true);
-
+drop policy if exists "feedback_public_select" on public.feedback;
 drop policy if exists "feedback_public_update" on public.feedback;
-create policy "feedback_public_update" on public.feedback for update using (true) with check (true);
-
 drop policy if exists "feedback_public_delete" on public.feedback;
-create policy "feedback_public_delete" on public.feedback for delete using (true);
+create policy "feedback_public_insert" on public.feedback
+for insert
+with check (true);
 
+drop policy if exists "feedback_public_select_approved" on public.feedback;
+create policy "feedback_public_select_approved" on public.feedback
+for select
+using (is_approved = true);
+
+drop policy if exists "feedback_admin_select_all" on public.feedback;
+create policy "feedback_admin_select_all" on public.feedback
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "feedback_admin_update" on public.feedback;
+create policy "feedback_admin_update" on public.feedback
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+drop policy if exists "feedback_admin_delete" on public.feedback;
+create policy "feedback_admin_delete" on public.feedback
+for delete
+to authenticated
+using (public.is_admin());
+
+-- Blogs
+drop policy if exists "blogs_public_select_published" on public.blogs;
 drop policy if exists "blogs_public_select" on public.blogs;
-create policy "blogs_public_select" on public.blogs for select using (true);
-
 drop policy if exists "blogs_public_insert" on public.blogs;
-create policy "blogs_public_insert" on public.blogs for insert with check (true);
-
 drop policy if exists "blogs_public_update" on public.blogs;
-create policy "blogs_public_update" on public.blogs for update using (true) with check (true);
-
 drop policy if exists "blogs_public_delete" on public.blogs;
-create policy "blogs_public_delete" on public.blogs for delete using (true);
+create policy "blogs_public_select_published" on public.blogs
+for select
+using (is_published = true);
+
+drop policy if exists "blogs_admin_select_all" on public.blogs;
+create policy "blogs_admin_select_all" on public.blogs
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "blogs_admin_insert" on public.blogs;
+create policy "blogs_admin_insert" on public.blogs
+for insert
+to authenticated
+with check (public.is_admin());
+
+drop policy if exists "blogs_admin_update" on public.blogs;
+create policy "blogs_admin_update" on public.blogs
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+drop policy if exists "blogs_admin_delete" on public.blogs;
+create policy "blogs_admin_delete" on public.blogs
+for delete
+to authenticated
+using (public.is_admin());
 
 insert into public.blogs (title, excerpt, body, author, is_published, created_at, updated_at)
 select
@@ -130,28 +235,54 @@ on conflict (id) do nothing;
 
 -- Storage object policies
 drop policy if exists "products_storage_public_select" on storage.objects;
+drop policy if exists "products_storage_public_insert" on storage.objects;
+drop policy if exists "products_storage_public_delete" on storage.objects;
 create policy "products_storage_public_select" on storage.objects
 for select using (bucket_id = 'products');
 
-drop policy if exists "products_storage_public_insert" on storage.objects;
-create policy "products_storage_public_insert" on storage.objects
-for insert with check (bucket_id = 'products');
+drop policy if exists "products_storage_admin_insert" on storage.objects;
+create policy "products_storage_admin_insert" on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'products' and public.is_admin());
 
-drop policy if exists "products_storage_public_delete" on storage.objects;
-create policy "products_storage_public_delete" on storage.objects
-for delete using (bucket_id = 'products');
+drop policy if exists "products_storage_admin_update" on storage.objects;
+create policy "products_storage_admin_update" on storage.objects
+for update
+to authenticated
+using (bucket_id = 'products' and public.is_admin())
+with check (bucket_id = 'products' and public.is_admin());
+
+drop policy if exists "products_storage_admin_delete" on storage.objects;
+create policy "products_storage_admin_delete" on storage.objects
+for delete
+to authenticated
+using (bucket_id = 'products' and public.is_admin());
 
 drop policy if exists "carousel_storage_public_select" on storage.objects;
+drop policy if exists "carousel_storage_public_insert" on storage.objects;
+drop policy if exists "carousel_storage_public_delete" on storage.objects;
 create policy "carousel_storage_public_select" on storage.objects
 for select using (bucket_id = 'carousel');
 
-drop policy if exists "carousel_storage_public_insert" on storage.objects;
-create policy "carousel_storage_public_insert" on storage.objects
-for insert with check (bucket_id = 'carousel');
+drop policy if exists "carousel_storage_admin_insert" on storage.objects;
+create policy "carousel_storage_admin_insert" on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'carousel' and public.is_admin());
 
-drop policy if exists "carousel_storage_public_delete" on storage.objects;
-create policy "carousel_storage_public_delete" on storage.objects
-for delete using (bucket_id = 'carousel');
+drop policy if exists "carousel_storage_admin_update" on storage.objects;
+create policy "carousel_storage_admin_update" on storage.objects
+for update
+to authenticated
+using (bucket_id = 'carousel' and public.is_admin())
+with check (bucket_id = 'carousel' and public.is_admin());
+
+drop policy if exists "carousel_storage_admin_delete" on storage.objects;
+create policy "carousel_storage_admin_delete" on storage.objects
+for delete
+to authenticated
+using (bucket_id = 'carousel' and public.is_admin());
 
 -- Recommended production hardening (manual):
 -- 1) Replace write policies with authenticated role only.

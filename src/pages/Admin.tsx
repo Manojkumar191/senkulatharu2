@@ -17,11 +17,9 @@ import {
 } from '../utils/meta';
 import { buildStoragePath, compressImage } from '../utils/image';
 
-const ADMIN_PASSWORD = (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) ?? 'admin123';
-const ADMIN_USER = (import.meta.env.VITE_ADMIN_USER as string | undefined) ?? 'admin';
 const CATEGORY_STORAGE_KEY = 'senkulatharu_custom_categories';
 
-type Section = 'add' | 'edit' | 'categories' | 'carousel' | 'feedback' | 'blog';
+type Section = 'add' | 'edit' | 'categories' | 'carousel' | 'feedback' | 'blog' | 'security';
 
 const emptyBlogForm = {
   title: '',
@@ -45,7 +43,14 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [loginName, setLoginName] = useState('');
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const [adminUser, setAdminUser] = useState('');
+  const [credentialsForm, setCredentialsForm] = useState({
+    email: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
   const [authError, setAuthError] = useState('');
   const [section, setSection] = useState<Section>('add');
 
@@ -83,6 +88,44 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     file: null as File | null,
   });
   const [productQuery, setProductQuery] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!mounted) return;
+        const session = data.session;
+        if (session?.user) {
+          setAuthenticated(true);
+          setAdminUser(session.user.email ?? 'admin');
+        } else {
+          setAuthenticated(false);
+          setAdminUser('');
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setAuthLoading(false);
+        }
+      });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setAuthenticated(true);
+        setAdminUser(session.user.email ?? 'admin');
+      } else {
+        setAuthenticated(false);
+        setAdminUser('');
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, []);
 
   const reload = async () => {
     const [productRows, top, blogRows] = await Promise.all([
@@ -137,36 +180,88 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     { key: 'carousel', label: 'Carousel', hint: 'Refresh homepage visuals' },
     { key: 'feedback', label: 'Feedback', hint: 'Approve customer reviews' },
     { key: 'blog', label: 'Blog', hint: 'Publish new stories' },
+    { key: 'security', label: 'Credentials', hint: 'Update admin login details' },
   ];
   const activeTab = sectionTabs.find((tab) => tab.key === section) ?? sectionTabs[0];
 
-  const onLogin = (event?: React.FormEvent) => {
+  const onLogin = async (event?: React.FormEvent) => {
     event?.preventDefault();
-    const name = loginName.trim();
-    if (!name) {
-      setAuthError('Admin login ID is required.');
+    const email = loginName.trim();
+    if (!email) {
+      setAuthError('Admin email is required.');
       return;
     }
     if (!password) {
       setAuthError('Password is required.');
       return;
     }
-    if (name !== ADMIN_USER) {
-      setAuthError('Unknown admin login ID.');
-      return;
-    }
-    if (password !== ADMIN_PASSWORD) {
-      setAuthError('Incorrect password.');
+
+    setAuthBusy(true);
+    setAuthError('');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error || !data.user) {
+      setAuthError('Invalid admin email or password.');
+      setAuthBusy(false);
       return;
     }
 
     setAuthenticated(true);
-    setAuthError('');
     setPassword('');
-    setAdminUser(name);
+    setAdminUser(data.user.email ?? email);
     setLoginName('');
+    setAuthBusy(false);
   };
 
+  const handleUpdateCredentials = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const email = credentialsForm.email.trim();
+    const newPassword = credentialsForm.newPassword;
+    const confirmPassword = credentialsForm.confirmPassword;
+
+    if (!email && !newPassword) {
+      setNotice('Enter a new email or password to update.');
+      return;
+    }
+    if (newPassword && newPassword.length < 6) {
+      setNotice('Password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword && newPassword !== confirmPassword) {
+      setNotice('Password confirmation does not match.');
+      return;
+    }
+    if (!email && !newPassword) return;
+
+    setBusy(true);
+    setNotice('');
+    const updates: { email?: string; password?: string } = {};
+    if (email) {
+      updates.email = email;
+    }
+    if (newPassword) {
+      updates.password = newPassword;
+    }
+
+    const { error } = await supabase.auth.updateUser(updates);
+    if (error) {
+      setNotice('Unable to save admin credentials.');
+      setBusy(false);
+      return;
+    }
+
+    if (email) {
+      setAdminUser(email);
+    }
+    setCredentialsForm({ email: '', newPassword: '', confirmPassword: '' });
+    setNotice(email ? 'Credentials updated. Check your email if confirmation is required.' : 'Password updated successfully.');
+    setBusy(false);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setAuthenticated(false);
+    setAdminUser('');
+  };
   const uploadProductImage = async (file: File) => {
     const compressed = await compressImage(file);
     const ext = compressed.type.includes('webp') ? 'webp' : 'jpg';
@@ -464,19 +559,28 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-app px-4 py-10">
+        <div className="w-full max-w-md rounded-2xl border border-[#b7d9c7] bg-white p-8">
+          <p className="text-sm font-bold text-[#2f5a45]">Checking admin session...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!authenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-app px-4 py-10">
         <form onSubmit={onLogin} className="mx-auto w-full max-w-md rounded-2xl border border-[#b7d9c7] bg-white p-8">
-          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-forest/70">Senkulatharu Control Center</p>
-          <h1 className="mt-2 font-headline text-3xl text-forest">Admin Login</h1>
-          <label className="mt-6 block text-sm font-bold text-brown">Admin login ID</label>
+          <h1 className="font-headline text-3xl text-forest">Admin Login</h1>
+          <label className="mt-6 block text-sm font-bold text-brown">Admin Email</label>
           <input
-            type="text"
+            type="email"
             value={loginName}
             onChange={(event) => setLoginName(event.target.value)}
             className="mt-2 w-full rounded-xl border border-[#bddccc] bg-[#fbfefc] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30"
-            placeholder="Enter admin login ID"
+            placeholder="Enter admin email"
           />
           <label className="mt-4 block text-sm font-bold text-brown">Password</label>
           <input
@@ -487,8 +591,12 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
             placeholder="Enter admin password"
           />
           {authError && <p className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-clay">{authError}</p>}
-          <button type="submit" className="mt-5 w-full rounded-xl bg-forest px-4 py-3 font-bold text-white transition hover:bg-forest/90">
-            Login
+          <button
+            type="submit"
+            disabled={authBusy}
+            className="mt-5 w-full rounded-xl bg-forest px-4 py-3 font-bold text-white transition hover:bg-forest/90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {authBusy ? 'Signing in...' : 'Login'}
           </button>
           <div className="mt-4 text-center">
             <button
@@ -516,7 +624,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
                 {adminUser && <p className="text-xs text-cream/80">Logged in as: {adminUser}</p>}
               </div>
               <button
-                onClick={() => setAuthenticated(false)}
+                onClick={handleLogout}
                 className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-rose-500"
               >
                 Logout
@@ -934,6 +1042,59 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
         </section>
       )}
 
+      {section === 'security' && (
+        <section className="space-y-4 rounded-2xl border border-[#d6e9df] bg-white p-6">
+          <div>
+            <h2 className="section-header font-headline text-2xl text-forest">Admin Login Credentials</h2>
+            <p className="mt-1 text-sm text-brown/80">
+              Current email: <span className="font-bold text-forest">{adminUser || 'Signed in admin'}</span>
+            </p>
+          </div>
+
+          <form onSubmit={handleUpdateCredentials} className="grid gap-3 rounded-xl border border-[#dcece4] bg-[#f7fcf9] p-4 md:max-w-2xl md:grid-cols-2 md:gap-4 md:p-5">
+            <div className="md:col-span-2">
+              <label className="text-sm font-bold text-slate-800">New Email (Optional)</label>
+              <input
+                type="email"
+                value={credentialsForm.email}
+                onChange={(event) => setCredentialsForm((prev) => ({ ...prev, email: event.target.value }))}
+                placeholder="Enter new admin email"
+                className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-forest/30"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-slate-800">New Password</label>
+              <input
+                type="password"
+                value={credentialsForm.newPassword}
+                onChange={(event) => setCredentialsForm((prev) => ({ ...prev, newPassword: event.target.value }))}
+                placeholder="Enter new password"
+                className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-forest/30"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-slate-800">Confirm Password</label>
+              <input
+                type="password"
+                value={credentialsForm.confirmPassword}
+                onChange={(event) => setCredentialsForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
+                placeholder="Confirm new password"
+                className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-forest/30"
+                required
+              />
+            </div>
+            <div className="md:col-span-2">
+              <button
+                type="submit"
+                className="rounded-lg bg-forest px-5 py-2.5 text-sm font-bold text-white transition hover:bg-forest/90"
+              >
+                Update Credentials
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
       {section === 'blog' && (
         <section className="space-y-4 rounded-2xl border border-[#d6e9df] bg-white p-4 text-slate-800 md:p-6">
           <div>
