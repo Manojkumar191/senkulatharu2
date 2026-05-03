@@ -3,10 +3,12 @@ import { FiClock, FiMail, FiMapPin, FiPhoneCall } from 'react-icons/fi';
 import { openWhatsApp } from '../utils/whatsapp';
 
 const FULL_ADDRESS = 'No.5/223, Kurumbapatti Palaviduthi (Post), Tharagampatti (S.O), Kadavur, Karur, Tamil Nadu, India - 621311';
-const MAP_LAT = '10.6477655';
-const MAP_LNG = '78.2385564';
-const MAP_EMBED_URL = `https://maps.google.com/maps?ll=${MAP_LAT},${MAP_LNG}&z=18&t=m&output=embed`;
-const MAP_OPEN_URL = `https://www.google.com/maps/search/?api=1&query=${MAP_LAT},${MAP_LNG}`;
+const MAP_LAT = '10.6477778';
+const MAP_LNG = '78.2385556';
+const MAP_COORDS = `${MAP_LAT},${MAP_LNG}`;
+const MAP_QUERY = encodeURIComponent(MAP_COORDS);
+const MAP_EMBED_URL = `https://maps.google.com/maps?hl=en&q=${MAP_QUERY}&z=18&t=m&iwloc=A&output=embed`;
+const MAP_OPEN_URL = `https://www.google.com/maps/search/?api=1&query=${MAP_QUERY}`;
 
 const CONTACT_POINTS = [
   {
