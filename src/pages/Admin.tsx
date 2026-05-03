@@ -487,7 +487,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     <div className="min-h-screen">
       {/* Navigation Bar */}
       <nav className="sticky top-0 z-50 bg-gradient-to-r from-forest to-moss text-white shadow-lg">
-        <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 py-4 flex items-center justify-between">
           <div>
             <h1 className="font-headline text-2xl font-bold">Admin Panel</h1>
             {adminUser && <p className="text-xs text-cream/80">Logged in as: {adminUser}</p>}
@@ -503,7 +503,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
 
       {/* Tab Navigation */}
       <div className="bg-white/50 border-b border-sand sticky top-[72px] z-40">
-        <div className="mx-auto max-w-7xl px-4">
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
           <div className="flex gap-1 overflow-x-auto py-2">
             {[
               ['add', '➕ Add Product'],
@@ -530,7 +530,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       </div>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-6 pb-8">
+      <main className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 py-6 pb-8">
         {notice && (
           <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-700 shadow-sm">
             {notice}
@@ -539,7 +539,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
 
       {section === 'add' && (
         <form onSubmit={handleAddProduct} className="rounded-lg border border-sand/30 bg-white p-6 shadow-sm space-y-3">
-          <h2 className="font-headline text-xl text-forest">Add New Product</h2>
+          <h2 className="section-header font-headline text-xl text-forest">Add New Product</h2>
           <div>
             <label className="text-sm font-bold text-slate-800">Product Name</label>
             <input placeholder="Enter product name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="w-full rounded-lg border px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" required />
@@ -765,7 +765,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
 
       {section === 'categories' && (
         <section className="rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
-          <h2 className="font-headline text-2xl text-forest">Product Categories</h2>
+          <h2 className="section-header font-headline text-2xl text-forest">Product Categories</h2>
           <div className="mt-4 flex gap-2">
             <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Add category" className="flex-1 rounded-lg border border-sand px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-forest/30" />
             <button onClick={addCategory} className="rounded-lg bg-forest px-4 py-3 font-bold text-white hover:bg-forest/90 transition">Add</button>
@@ -795,7 +795,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       {section === 'feedback' && (
         <section className="space-y-4 rounded-lg border border-sand/30 bg-white p-6 shadow-sm">
           <div>
-            <h2 className="font-headline text-2xl text-forest">Pending Feedback</h2>
+            <h2 className="section-header font-headline text-2xl text-forest">Pending Feedback</h2>
             <p className="mt-1 text-sm text-brown/80">Approve feedback to show it in the moving customer review section on Home.</p>
           </div>
 
@@ -835,7 +835,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
           )}
 
           <div>
-            <h2 className="font-headline text-2xl text-forest">Feedback In Moving Section</h2>
+            <h2 className="section-header font-headline text-2xl text-forest">Feedback In Moving Section</h2>
           </div>
 
           {approvedFeedback.length === 0 ? (
@@ -894,7 +894,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       {section === 'blog' && (
         <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 text-slate-800 shadow-sm md:p-6">
           <div>
-            <h2 className="font-headline text-xl text-slate-900 md:text-2xl">Blog Stories</h2>
+            <h2 className="section-header font-headline text-xl text-slate-900 md:text-2xl">Blog Stories</h2>
             <p className="mt-1 text-xs text-slate-600 md:text-sm">Add or update stories that appear on the Stories from Kadavur page.</p>
           </div>
 

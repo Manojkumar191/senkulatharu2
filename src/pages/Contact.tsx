@@ -87,8 +87,8 @@ export function Contact() {
           }}
         >
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="font-headline text-3xl text-[#1a4f37] md:text-4xl">Message Us</h2>
+              <div>
+              <h2 className="section-header font-headline text-3xl text-[#1a4f37] md:text-4xl">Message Us</h2>
               <p className="mt-1 text-sm text-[#24563f]/90">Enter your details and tell us what you need.</p>
             </div>
             <span className="rounded-full bg-[#1f7a4f] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-white">Quick Response</span>

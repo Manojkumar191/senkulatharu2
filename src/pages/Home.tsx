@@ -255,8 +255,8 @@ export function Home({ onNavigate }: HomeProps) {
 
   return (
     <div className="space-y-10 pb-6">
-      <section className="relative left-1/2 right-1/2 -mx-[50vw] w-screen overflow-hidden bg-[#bfe4d2] px-4 py-9 md:px-8 md:py-12">
-        <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+      <section className="relative left-1/2 right-1/2 -mx-[50vw] w-screen overflow-hidden bg-[#bfe4d2] px-4 pt-6 pb-9 md:px-8 md:pt-8 md:pb-12">
+        <div className="relative w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="animate-floatIn">
             <h1 className="max-w-2xl font-headline text-[clamp(3rem,5vw,5.6rem)] leading-[0.95] text-[#153a2b]">
               Honest food and tools crafted by dryland farmers.
@@ -329,7 +329,7 @@ export function Home({ onNavigate }: HomeProps) {
           <span className="h-3 w-3 rounded-full bg-moss" />
           Crafted with care
         </p>
-        <h2 className="max-w-4xl font-headline text-2xl leading-tight text-[#103327] md:text-4xl">Everything from our farms</h2>
+        <h2 className="section-header max-w-4xl font-headline text-2xl leading-tight text-[#103327] md:text-4xl">Everything from our farms</h2>
         <p className="max-w-5xl text-base font-semibold leading-snug text-[#234f3f] md:text-xl">
           We grow, harvest, cold-press, and hand-pack. Add farm tools to your kitchen and balcony gardens to keep the story going.
         </p>
@@ -391,7 +391,7 @@ export function Home({ onNavigate }: HomeProps) {
 
       <section className="rounded-3xl border border-white/60 bg-[#bce8d4]/80 p-8 shadow-glass">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="font-headline text-4xl text-[#173828] md:text-5xl">Farm pantry and tools</h2>
+          <h2 className="section-header font-headline text-4xl text-[#173828] md:text-5xl">Farm pantry and tools</h2>
           <button
             onClick={() => jumpToProducts()}
             className="rounded-2xl bg-[#21ab7f] px-6 py-3 text-base font-bold text-white shadow-[0_12px_24px_-16px_rgba(24,120,88,0.85)] transition hover:bg-[#1c956e]"
@@ -429,8 +429,8 @@ export function Home({ onNavigate }: HomeProps) {
       </section>
 
       <section className="relative left-1/2 right-1/2 -mx-[50vw] w-screen overflow-hidden bg-gradient-to-r from-[#2fa77d] via-[#49b890] to-[#73c9a8] py-5 md:py-6">
-        <div className="mx-auto max-w-[1600px] px-4 md:px-8">
-          <h2 className="text-center font-headline text-xl text-white md:text-3xl">What Our Customers Say</h2>
+        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
+          <h2 className="section-header text-center font-headline text-xl text-white md:text-3xl">What Our Customers Say</h2>
 
           <div
             className="relative mt-3 overflow-hidden pb-2 pt-3"

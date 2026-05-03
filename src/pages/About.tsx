@@ -84,7 +84,7 @@ export function About() {
         <div className="flex items-start gap-4">
           <p className="font-headline text-3xl leading-none text-[#53a276] md:text-5xl">01</p>
           <div className="space-y-4">
-            <h2 className="font-headline text-2xl leading-tight text-[#24523d] md:text-4xl">A Name Born from Rain and Red Soil</h2>
+            <h2 className="section-header font-headline text-2xl leading-tight text-[#24523d] md:text-4xl">A Name Born from Rain and Red Soil</h2>
             <ul className="space-y-3 text-[15px] leading-7 text-[#2f5a45] md:text-base md:leading-8">
               {RIVER_STORY.map((paragraph, index) => (
                 <li
@@ -110,7 +110,7 @@ export function About() {
         <div className="flex items-start gap-4">
           <p className="font-headline text-3xl leading-none text-[#53a276] md:text-5xl">02</p>
           <div className="w-full">
-            <h2 className="font-headline text-3xl text-[#24523d] md:text-5xl">From Farmers to Your Home</h2>
+            <h2 className="section-header font-headline text-3xl text-[#24523d] md:text-5xl">From Farmers to Your Home</h2>
             <p className="mt-2 text-sm font-black uppercase tracking-[0.1em] text-[#4f8e6a]">Direct journey, clear origin</p>
 
             <ul className="mt-5 grid gap-3">
@@ -138,7 +138,7 @@ export function About() {
         <div className="flex items-start gap-4">
           <p className="font-headline text-3xl leading-none text-[#53a276] md:text-5xl">03</p>
           <div className="w-full space-y-4">
-            <h2 className="font-headline text-3xl text-[#24523d] md:text-5xl">Living Traditions in Practice</h2>
+            <h2 className="section-header font-headline text-3xl text-[#24523d] md:text-5xl">Living Traditions in Practice</h2>
             <div className="grid gap-4 md:grid-cols-2">
               {LIVING_TRADITIONS.map((item, index) => (
                 <article
@@ -160,7 +160,7 @@ export function About() {
         <div className="flex items-start gap-4">
           <p className="font-headline text-3xl leading-none text-[#53a276] md:text-5xl">04</p>
           <div className="w-full">
-            <h2 className="font-headline text-3xl text-[#24523d] md:text-5xl">Why Dryland Farming Matters</h2>
+            <h2 className="section-header font-headline text-3xl text-[#24523d] md:text-5xl">Why Dryland Farming Matters</h2>
             <p className="mt-3 max-w-xl text-[15px] leading-7 text-[#2f5a45] md:text-base md:leading-8">
               Dryland agriculture protects long-term soil and water health while sustaining local communities that have farmed this landscape for generations.
             </p>
@@ -185,7 +185,7 @@ export function About() {
         <div className="flex items-start gap-4">
           <p className="font-headline text-3xl leading-none text-[#53a276] md:text-5xl">05</p>
           <div className="w-full">
-            <h2 className="font-headline text-3xl text-[#24523d] md:text-5xl">Our Promise</h2>
+            <h2 className="section-header font-headline text-3xl text-[#24523d] md:text-5xl">Our Promise</h2>
             <p className="mt-3 text-[15px] leading-7 text-[#2f5a45] md:text-base md:leading-8">Our promise is simple and transparent, always in this order:</p>
             <ul className="mt-4 space-y-3">
               {PROMISE_LINES.map((line, index) => (

@@ -7,7 +7,7 @@ interface FooterProps {
 export function Footer({ onNavigate }: FooterProps) {
   return (
     <footer className="mt-8 border-t border-white/30 bg-gradient-to-r from-[#0d3425] via-[#1d5a3b] to-[#0d3425] text-cream sm:mt-10">
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 md:grid-cols-3 md:gap-7 md:py-8">
+      <div className="w-full grid gap-6 px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 py-6 md:grid-cols-3 md:gap-7 md:py-8">
         <div>
           <h3 className="font-headline text-lg sm:text-xl">Senkulatharu</h3>
           <p className="mt-2 text-sm leading-6 text-cream/95">

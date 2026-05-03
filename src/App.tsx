@@ -106,7 +106,7 @@ export default function App() {
           onClearCart={clearCart}
         />
       )}
-      <main className={`mx-auto max-w-7xl px-4 pb-8 ${activePage === 'home' ? 'pt-0' : 'pt-3 md:pt-4'}`}>
+      <main className={`w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 ${activePage === 'home' ? 'pt-12 md:pt-16' : 'pt-16 md:pt-20'} pb-8`}>
         {renderPage({
           page: activePage,
           search: prefillSearch,
