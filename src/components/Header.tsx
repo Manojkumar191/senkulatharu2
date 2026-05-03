@@ -48,7 +48,7 @@ export function Header({
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/60 bg-white/95 backdrop-blur-lg">
       <div className="flex w-full items-center gap-2 px-4 py-3 sm:gap-2.5 sm:px-6 md:px-8 md:pr-44 lg:px-16 lg:pr-48 xl:px-24 xl:pr-56">
-        <button className="flex items-start gap-1" onClick={() => onNavigate('home')}>
+        <button className="flex items-start gap-1 lg:-ml-2 lg:gap-3" onClick={() => onNavigate('home')}>
           <img src="/senkulatharu-logo.png" alt="Senkulatharu logo" className="h-12 w-auto object-contain" />
           <div className="min-w-0 text-left">
             <p className="mt-3 truncate font-headline text-lg font-extrabold leading-none tracking-[0.03em] text-forest sm:mt-0 sm:text-[1.65rem]">Senkulatharu</p>

@@ -126,6 +126,10 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   const pendingFeedback = useMemo(() => feedbackItems.filter((item) => !item.is_approved), [feedbackItems]);
 
   const approvedFeedback = useMemo(() => feedbackItems.filter((item) => item.is_approved), [feedbackItems]);
+  const isNoticeError = useMemo(
+    () => /fail|unable|incorrect|required|unknown|please|reserved|already|at least|invalid/i.test(notice),
+    [notice],
+  );
   const sectionTabs: Array<{ key: Section; label: string; hint: string }> = [
     { key: 'add', label: 'Add Product', hint: 'Create a new listing' },
     { key: 'edit', label: 'Edit Products', hint: 'Update price and stock' },
@@ -501,46 +505,61 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   }
   return (
     <div className="min-h-screen bg-app pb-10">
-      {/* Navigation Bar */}
-      <nav className="sticky top-0 z-50 border-b border-[#d5eadf] bg-[linear-gradient(90deg,#0f5e3f_0%,#1d7a52_56%,#0f5e3f_100%)] text-white">
-        <div className="w-full px-4 py-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#e8f9ef]">Dashboard</p>
-              <h1 className="font-headline text-2xl font-bold">Admin Panel</h1>
-              {adminUser && <p className="text-xs text-cream/80">Logged in as: {adminUser}</p>}
-            </div>
-            <button
-              onClick={() => setAuthenticated(false)}
-              className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-rose-500"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
-      {/* Tab Navigation */}
-      <div className="sticky top-[90px] z-40 border-b border-[#deece4] bg-white">
-        <div className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
-          <div className="flex gap-2 overflow-x-auto py-3">
-            {sectionTabs.map((tab) => (
+      <div className="fixed inset-x-0 top-0 z-50">
+        {/* Navigation Bar */}
+        <nav className="border-b border-[#d5eadf] bg-[linear-gradient(90deg,#0f5e3f_0%,#1d7a52_56%,#0f5e3f_100%)] text-white">
+          <div className="w-full px-4 py-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#e8f9ef]">Dashboard</p>
+                <h1 className="font-headline text-2xl font-bold">Admin Panel</h1>
+                {adminUser && <p className="text-xs text-cream/80">Logged in as: {adminUser}</p>}
+              </div>
               <button
-                key={tab.key}
-                onClick={() => setSection(tab.key)}
-                className={`whitespace-nowrap rounded-xl border px-4 py-2 text-sm font-bold transition ${
-                  section === tab.key
-                    ? 'border-forest bg-forest text-white'
-                    : 'border-[#cfe3d8] bg-white text-forest hover:border-[#9ac9b3] hover:bg-[#f4faf7]'
-                }`}
+                onClick={() => setAuthenticated(false)}
+                className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-rose-500"
               >
-                {tab.label}
+                Logout
               </button>
-            ))}
+            </div>
+          </div>
+        </nav>
+        {/* Tab Navigation */}
+        <div className="border-b border-[#deece4] bg-white">
+          <div className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24">
+            <div className="flex gap-2 overflow-x-auto py-3">
+              {sectionTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setSection(tab.key)}
+                  className={`whitespace-nowrap rounded-xl border px-4 py-2 text-sm font-bold transition ${
+                    section === tab.key
+                      ? 'border-forest bg-forest text-white'
+                      : 'border-[#cfe3d8] bg-white text-forest hover:border-[#9ac9b3] hover:bg-[#f4faf7]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+        {notice && (
+          <div className="pointer-events-none absolute right-4 top-[82px] z-[60] sm:top-[86px] md:right-8 lg:right-16 xl:right-24">
+            <div
+              className={`pointer-events-auto max-w-[min(88vw,26rem)] rounded-xl border px-4 py-2.5 text-sm font-semibold shadow-[0_14px_26px_-16px_rgba(0,0,0,0.35)] ${
+                isNoticeError
+                  ? 'border-rose-300 bg-rose-50 text-rose-800'
+                  : 'border-emerald-300 bg-emerald-50 text-emerald-800'
+              }`}
+            >
+              {notice}
+            </div>
+          </div>
+        )}
       </div>
       {/* Main Content */}
-      <main className="w-full px-4 py-6 pb-8 sm:px-6 md:px-8 lg:px-16 xl:px-24">
+      <main className="w-full px-4 pb-8 pt-44 sm:px-6 sm:pt-48 md:px-8 md:pt-44 lg:px-16 xl:px-24">
         <section className="mb-5 grid gap-3 rounded-2xl border border-[#d6e9df] bg-white p-4 md:grid-cols-[1.25fr_2fr] md:p-5">
           <div>
             <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#2e7753]">Active Workspace</p>
@@ -561,12 +580,6 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
             ))}
           </div>
         </section>
-        {notice && (
-          <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-700">
-            {notice}
-          </div>
-        )}
-
       {section === 'add' && (
         <form onSubmit={handleAddProduct} className="space-y-3 rounded-2xl border border-[#d6e9df] bg-white p-6">
           <h2 className="section-header font-headline text-xl text-forest">Add New Product</h2>
