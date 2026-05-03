@@ -20,8 +20,10 @@ import { buildStoragePath, compressImage } from '../utils/image';
 const ADMIN_PASSWORD = (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) ?? 'admin123';
 const ADMIN_USER = (import.meta.env.VITE_ADMIN_USER as string | undefined) ?? 'admin';
 const CATEGORY_STORAGE_KEY = 'senkulatharu_custom_categories';
+const ADMIN_USER_STORAGE_KEY = 'senkulatharu_admin_user';
+const ADMIN_PASSWORD_STORAGE_KEY = 'senkulatharu_admin_password';
 
-type Section = 'add' | 'edit' | 'categories' | 'carousel' | 'feedback' | 'blog';
+type Section = 'add' | 'edit' | 'categories' | 'carousel' | 'feedback' | 'blog' | 'security';
 
 const emptyBlogForm = {
   title: '',
@@ -46,6 +48,13 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
   const [password, setPassword] = useState('');
   const [loginName, setLoginName] = useState('');
   const [adminUser, setAdminUser] = useState('');
+  const [currentAdminUser, setCurrentAdminUser] = useState(getStoredAdminUser);
+  const [currentAdminPassword, setCurrentAdminPassword] = useState(getStoredAdminPassword);
+  const [credentialsForm, setCredentialsForm] = useState({
+    loginId: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
   const [authError, setAuthError] = useState('');
   const [section, setSection] = useState<Section>('add');
 
@@ -137,6 +146,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     { key: 'carousel', label: 'Carousel', hint: 'Refresh homepage visuals' },
     { key: 'feedback', label: 'Feedback', hint: 'Approve customer reviews' },
     { key: 'blog', label: 'Blog', hint: 'Publish new stories' },
+    { key: 'security', label: 'Credentials', hint: 'Update admin login details' },
   ];
   const activeTab = sectionTabs.find((tab) => tab.key === section) ?? sectionTabs[0];
 
@@ -151,11 +161,11 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       setAuthError('Password is required.');
       return;
     }
-    if (name !== ADMIN_USER) {
+    if (name !== currentAdminUser) {
       setAuthError('Unknown admin login ID.');
       return;
     }
-    if (password !== ADMIN_PASSWORD) {
+    if (password !== currentAdminPassword) {
       setAuthError('Incorrect password.');
       return;
     }
@@ -165,6 +175,42 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     setPassword('');
     setAdminUser(name);
     setLoginName('');
+  };
+
+  const handleUpdateCredentials = (event: React.FormEvent) => {
+    event.preventDefault();
+    const loginId = credentialsForm.loginId.trim();
+    const newPassword = credentialsForm.newPassword;
+    const confirmPassword = credentialsForm.confirmPassword;
+
+    if (!loginId) {
+      setNotice('Admin login ID is required.');
+      return;
+    }
+    if (!newPassword) {
+      setNotice('Password is required.');
+      return;
+    }
+    if (newPassword.length < 4) {
+      setNotice('Password must be at least 4 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setNotice('Password confirmation does not match.');
+      return;
+    }
+
+    try {
+      localStorage.setItem(ADMIN_USER_STORAGE_KEY, loginId);
+      localStorage.setItem(ADMIN_PASSWORD_STORAGE_KEY, newPassword);
+      setCurrentAdminUser(loginId);
+      setCurrentAdminPassword(newPassword);
+      setAdminUser(loginId);
+      setCredentialsForm({ loginId: '', newPassword: '', confirmPassword: '' });
+      setNotice('Admin login credentials updated.');
+    } catch {
+      setNotice('Unable to save admin credentials.');
+    }
   };
 
   const uploadProductImage = async (file: File) => {
@@ -468,8 +514,7 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     return (
       <div className="flex min-h-screen items-center justify-center bg-app px-4 py-10">
         <form onSubmit={onLogin} className="mx-auto w-full max-w-md rounded-2xl border border-[#b7d9c7] bg-white p-8">
-          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-forest/70">Senkulatharu Control Center</p>
-          <h1 className="mt-2 font-headline text-3xl text-forest">Admin Login</h1>
+          <h1 className="font-headline text-3xl text-forest">Admin Login</h1>
           <label className="mt-6 block text-sm font-bold text-brown">Admin login ID</label>
           <input
             type="text"
@@ -934,6 +979,61 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
         </section>
       )}
 
+      {section === 'security' && (
+        <section className="space-y-4 rounded-2xl border border-[#d6e9df] bg-white p-6">
+          <div>
+            <h2 className="section-header font-headline text-2xl text-forest">Admin Login Credentials</h2>
+            <p className="mt-1 text-sm text-brown/80">
+              Current login ID: <span className="font-bold text-forest">{currentAdminUser}</span>
+            </p>
+          </div>
+
+          <form onSubmit={handleUpdateCredentials} className="grid gap-3 rounded-xl border border-[#dcece4] bg-[#f7fcf9] p-4 md:max-w-2xl md:grid-cols-2 md:gap-4 md:p-5">
+            <div className="md:col-span-2">
+              <label className="text-sm font-bold text-slate-800">New Login ID</label>
+              <input
+                type="text"
+                value={credentialsForm.loginId}
+                onChange={(event) => setCredentialsForm((prev) => ({ ...prev, loginId: event.target.value }))}
+                placeholder="Enter new admin login ID"
+                className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-forest/30"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-slate-800">New Password</label>
+              <input
+                type="password"
+                value={credentialsForm.newPassword}
+                onChange={(event) => setCredentialsForm((prev) => ({ ...prev, newPassword: event.target.value }))}
+                placeholder="Enter new password"
+                className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-forest/30"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-slate-800">Confirm Password</label>
+              <input
+                type="password"
+                value={credentialsForm.confirmPassword}
+                onChange={(event) => setCredentialsForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
+                placeholder="Confirm new password"
+                className="mt-1.5 w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-forest/30"
+                required
+              />
+            </div>
+            <div className="md:col-span-2">
+              <button
+                type="submit"
+                className="rounded-lg bg-forest px-5 py-2.5 text-sm font-bold text-white transition hover:bg-forest/90"
+              >
+                Update Credentials
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
+
       {section === 'blog' && (
         <section className="space-y-4 rounded-2xl border border-[#d6e9df] bg-white p-4 text-slate-800 md:p-6">
           <div>
@@ -1081,4 +1181,20 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
       </main>
     </div>
   );
+}
+
+function getStoredAdminUser(): string {
+  try {
+    return localStorage.getItem(ADMIN_USER_STORAGE_KEY)?.trim() || ADMIN_USER;
+  } catch {
+    return ADMIN_USER;
+  }
+}
+
+function getStoredAdminPassword(): string {
+  try {
+    return localStorage.getItem(ADMIN_PASSWORD_STORAGE_KEY) || ADMIN_PASSWORD;
+  } catch {
+    return ADMIN_PASSWORD;
+  }
 }
