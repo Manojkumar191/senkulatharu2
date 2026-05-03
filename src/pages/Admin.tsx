@@ -111,6 +111,12 @@ export function Admin({ onNavigate }: { onNavigate?: (page: PageName) => void })
     localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(categories));
   }, [categories]);
 
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(''), 2600);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
+
   const allCategories = useMemo(() => {
     const set = new Set<string>(['Uncategorized', ...categories]);
     products.forEach((product) => set.add(parseCategoryFromDescription(product.description || '')));
