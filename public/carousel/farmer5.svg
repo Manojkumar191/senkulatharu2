@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
-  <rect width="1200" height="700" fill="#5f3b24"/>
-  <circle cx="970" cy="130" r="96" fill="#e8b34a" fill-opacity="0.5"/>
-  <path d="M0 470 Q300 340 600 470 T1200 470 L1200 700 L0 700 Z" fill="#6a8249"/>
-  <path d="M0 520 Q300 420 600 520 T1200 520 L1200 700 L0 700 Z" fill="#1f4f35"/>
-  <text x="120" y="220" font-size="56" font-family="Georgia, serif" fill="#f6efde">Naturally Grown</text>
-  <text x="120" y="285" font-size="32" font-family="sans-serif" fill="#f6efde">From our fields to your family, with trust</text>
-</svg>

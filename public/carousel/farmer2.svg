@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
-  <rect width="1200" height="700" fill="#d8be8a"/>
-  <path d="M0 470 C260 380 360 550 620 460 C860 380 980 520 1200 430 L1200 700 L0 700 Z" fill="#1f4f35"/>
-  <path d="M0 520 C240 470 390 590 640 520 C860 460 960 580 1200 520 L1200 700 L0 700 Z" fill="#6a8249"/>
-  <text x="120" y="140" font-size="56" font-family="Georgia, serif" fill="#5f3b24">Seasonal Harvest</text>
-  <text x="120" y="200" font-size="32" font-family="sans-serif" fill="#5f3b24">Millets, pulses and oils from red soil lands</text>
-</svg>

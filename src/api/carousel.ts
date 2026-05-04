@@ -3,8 +3,15 @@ import { buildStoragePath, compressImage } from '../utils/image';
 import type { CarouselImage, CarouselSection } from '../types';
 
 const defaults: Record<CarouselSection, string[]> = {
-  top: ['/carousel/farmer1.svg', '/carousel/farmer2.svg', '/carousel/farmer3.svg'],
-  marquee: ['/carousel/farmer3.svg', '/carousel/farmer4.svg', '/carousel/farmer5.svg'],
+  top: ['/carousel/Honey.jpg', '/carousel/Wheat.jpg', '/carousel/Rice.jpg'],
+  marquee: [
+    '/carousel/Honey.jpg',
+    '/carousel/Wheat.jpg',
+    '/carousel/Rice.jpg',
+    '/carousel/Ragi.jpg',
+    '/carousel/Corn.jpg',
+    '/carousel/Dal.jpg',
+  ],
 };
 
 export function getDefaultCarouselImages(section: CarouselSection): string[] {

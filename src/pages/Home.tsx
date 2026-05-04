@@ -15,7 +15,7 @@ interface FeedbackCard {
   rating: number;
 }
 
-const DEFAULT_PRODUCT_NAMES = ['Rice', 'Black Rice', 'Whole Wheat', 'Pure Honey', 'Organic Rice'];
+const DEFAULT_PRODUCT_NAMES = ['Honey', 'Wheat', 'Rice', 'Ragi', 'Corn', 'Dal'];
 
 const VALUE_POINTS = [
   {
@@ -92,8 +92,15 @@ const DEFAULT_CUSTOMER_FEEDBACK: FeedbackCard[] = [
 
 const FEEDBACK_MIN_VISIBLE_ITEMS = 40;
 
-const TOP_FALLBACK_IMAGES = ['/carousel/farmer1.svg', '/carousel/farmer2.svg', '/carousel/farmer3.svg'];
-const MARQUEE_FALLBACK_IMAGES = ['/carousel/farmer3.svg', '/carousel/farmer4.svg', '/carousel/farmer5.svg'];
+const TOP_FALLBACK_IMAGES = ['/carousel/Honey.jpg', '/carousel/Wheat.jpg', '/carousel/Rice.jpg'];
+const MARQUEE_FALLBACK_IMAGES = [
+  '/carousel/Honey.jpg',
+  '/carousel/Wheat.jpg',
+  '/carousel/Rice.jpg',
+  '/carousel/Ragi.jpg',
+  '/carousel/Corn.jpg',
+  '/carousel/Dal.jpg',
+];
 const MARQUEE_MIN_VISIBLE_ITEMS = 10;
 
 function formatProductLabel(name: string): string {
@@ -304,12 +311,12 @@ export function Home({ onNavigate }: HomeProps) {
                   alt="Dryland farm spotlight"
                   className="h-72 w-full object-cover md:h-[440px]"
                   onError={(event) => {
-                    (event.currentTarget as HTMLImageElement).src = '/carousel/farmer1.svg';
+                    (event.currentTarget as HTMLImageElement).src = '/carousel/Honey.jpg';
                   }}
                 />
               ) : (
                 <img
-                  src="/carousel/farmer1.svg"
+                  src="/carousel/Honey.jpg"
                   alt="Dryland farm spotlight"
                   className="h-72 w-full object-cover md:h-[440px]"
                 />
